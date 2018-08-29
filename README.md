@@ -18,6 +18,11 @@ The Rust compiler runs the [MIR](https://rust-lang-nursery.github.io/rustc-guide
 in the [`MIR` interpreter (miri)](https://rust-lang-nursery.github.io/rustc-guide/const-eval.html),
 which sort of is a virtual machine using `MIR` as "bytecode".
 
+## Table of Contents
+
+* [Const Safety](const_safety.md)
+* [Promotion](const_safety.md)
+
 ## Related RFCs
 
 ### Const Promotion
