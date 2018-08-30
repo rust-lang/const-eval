@@ -9,7 +9,8 @@ four possible ways:
 * The program causes undefined behavior (e.g., dereferencing an out-of-bounds
   pointer).
 * The program panics (e.g., a failed bounds check).
-* The program loops forever, and this is detected by the loop detector.
+* The program loops forever, and this is detected by the loop detector.  Note
+  that this detection happens on a best-effort basis only.
 
 Just like panics and non-termination are acceptable in safe run-time Rust code,
 we also consider these acceptable in safe compile-time Rust code.  However, we
