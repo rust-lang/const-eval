@@ -86,9 +86,10 @@ way when working with const-safe arguments.
 
 TODO: Fill this with information.
 
-### 4. Interior Mutability
+### 4. Reference constraints
 
-TODO: Fill this with information.
+[Constant references](const_refs.md) impose some restrictions on the data they
+point to; the same restrictions apply to promoteds.
 
 ## Open questions
 
