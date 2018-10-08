@@ -89,23 +89,17 @@ but to abort compilation of a program that would have compiled fine if we would
 not have decided to promote.  It is the responsibility of `foo` to not fail this
 way when working with const-safe arguments.
 
-### 3. Drop
+### 3. Constraints on constants
+
+All the [extra restrictions for constants](const.md) beyond const safety also
+apply to promoteds, for the same reason: Evaluating the expression at
+compile-time instead of run-time should not alter program behavior.
+
+### 4. Drop
 
 TODO: Fill this with information.
 
-### 4. Reference constraints
-
-[Constant references](const_refs.md) impose some restrictions on the data they
-point to; the same restrictions apply to promoteds.
-
-### 5. Accessing statics
-
-Since the promoted code is evaluated at compile-time, we must make sure that it
-does not access any mutable statics (including safe `static` with interior
-mutability), not even read from them.  Their value could have changed at
-run-time, so we wouldn't be producing the correct result.
-
 ## Open questions
 
-* There is a fourth kind of CTFE failure -- and endless loop being detected.
-  What do we do when that happens while evaluating a promoted?
+* There is a fourth kind of CTFE failure -- resource exhaustion.  What do we do
+  when that happens while evaluating a promoted?
