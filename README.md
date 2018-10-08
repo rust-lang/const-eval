@@ -21,7 +21,8 @@ which sort of is a virtual machine using `MIR` as "bytecode".
 ## Table of Contents
 
 * [Const Safety](const_safety.md)
-* [Promotion](const_safety.md)
+* [Constant References](const_refs.md)
+* [Promotion](promotion.md)
 
 ## Related RFCs
 
