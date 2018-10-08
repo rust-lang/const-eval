@@ -1,7 +1,7 @@
 # References in constants
 
 Constants of reference type are not an entirely straight-forward topic, for
-reasonings unrelated to [const safety](const_safety.md).  The issue is that
+reasons unrelated to [const safety](const_safety.md).  The issue is that
 every use of a constant like
 ```rust
 const REF: &u32 = &42;
@@ -9,8 +9,13 @@ const REF: &u32 = &42;
 is supposed to behave as if the value of the constant was copy-pasted into every
 place where it is used.  However, the *real* behavior is that a single global
 "static" allocation is created containing the `42`, and every use of `REF` gets
-evaluated to the address of that static.  There are three reasons why this could
-be an issue.
+evaluated to the address of that static.  It's as if we had written
+```rust
+const REF: &u32 = { static _STATIC = 42; &_STATIC };
+```
+except that isn't allowed because constants cannot refer to statics.
+
+There are three reasons why this could be an issue.
 
 ## Pointer equality
 
@@ -39,7 +44,7 @@ is actually accepted by the compiler because we know that there is no
 Finally, the same constant reference is actually shared across threads.  This is
 very similar to multiple threads having a shared reference to the same `static`,
 which is why `static` must be `Sync`.  So it seems like we should reject
-non-`Sync` types.
+non-`Sync` types, conforming with the desugaring described above.
 
 However, this does not currently happen, and there are several crates across the
 ecosystem that would break if we just started enforcing this now. See

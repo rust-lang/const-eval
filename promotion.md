@@ -1,5 +1,11 @@
 # Const promotion
 
+"Promotion" is a mechanism that affects code like `&3`: Instead of putting it on
+the stack, the `3` is allocated in global static memory and a reference with
+lifetime `'static` is provided.  This is essentially an automatic transformation
+turning `&EXPR` into `{ const _PROMOTED = &EXPR; EXPR }`, but only if `EXPR`
+qualifies.
+
 Note that promotion happens on the MIR, not on surface-level syntax.  This is
 relevant when discussing e.g. handling of panics caused by overflowing
 arithmetic.
@@ -8,11 +14,12 @@ arithmetic.
 
 ### 1. Panics
 
-Promotion is not allowed to throw away side effects.  This includes
-panicking.  Let us look at what happens when we promote `&(0_usize - 1)` in a
-debug build: We have to avoid erroring at compile-time (because that would be
-promotion breaking compilation), but we must be sure to error correctly at
-run-time.  In the MIR, this looks roughly like
+Promotion is not allowed to throw away side effects.  This includes panicking.
+Let us look at what happens when we promote `&(0_usize - 1)` in a debug build:
+We have to avoid erroring at compile-time, because that would be promotion
+breaking compilation (the code would have compiled just fine if we hadn't
+promoted), but we must be sure to error correctly at run-time.  In the MIR, this
+looks roughly like
 
 ```
 _tmp1 = CheckedSub (const 0usize) (const 1usize)
@@ -23,10 +30,10 @@ _tmp2 = tmp1.0
 _res = &_tmp2
 ```
 
-Both `_tmp1` and `_tmp2` are promoted to statics.  `_tmp1` evaluates to `(~0,
-true)`, so the assertion will always fail at run-time.  Computing `_tmp2` fails
-with a panic, which is thrown away -- so we have no result.  In principle, we
-could generate any code for this because we know the code is unreachable (the
+Both `_tmp1` and `_tmp2` are promoted.  `_tmp1` evaluates to `(~0, true)`, so
+the assertion will always fail at run-time.  Computing `_tmp2` fails with a
+panic, which is thrown away -- so we have no result.  In principle, we could
+generate any code for this because we know the code is unreachable (the
 assertion is going to fail).  Just to be safe, we generate a call to
 `llvm.trap`.
 
@@ -90,6 +97,13 @@ TODO: Fill this with information.
 
 [Constant references](const_refs.md) impose some restrictions on the data they
 point to; the same restrictions apply to promoteds.
+
+### 5. Accessing statics
+
+Since the promoted code is evaluated at compile-time, we must make sure that it
+does not access any mutable statics (including safe `static` with interior
+mutability), not even read from them.  Their value could have changed at
+run-time, so we wouldn't be producing the correct result.
 
 ## Open questions
 
