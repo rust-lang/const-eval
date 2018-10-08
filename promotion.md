@@ -101,5 +101,5 @@ TODO: Fill this with information.
 
 ## Open questions
 
-* There is a fourth kind of CTFE failure -- and endless loop being detected.
-  What do we do when that happens while evaluating a promoted?
+* There is a fourth kind of CTFE failure -- resource exhaustion.  What do we do
+  when that happens while evaluating a promoted?
