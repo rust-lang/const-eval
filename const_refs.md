@@ -1,7 +1,7 @@
 # References in constants
 
 Constants of reference type are not an entirely straight-forward topic, for
-reasonings unrelated to [const safety](const_safety.md).  The issue is that
+reasons unrelated to [const safety](const_safety.md).  The issue is that
 every use of a constant like
 ```rust
 const REF: &u32 = &42;
