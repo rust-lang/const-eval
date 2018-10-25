@@ -153,3 +153,8 @@ of writing this RFC) most definitely not const.
 This would go in hand with the current scheme for const functions, which may also be called
 at runtime with runtime arguments, but are checked for soundness as if they were called in
 a const context.
+
+## Drop
+
+Should we also allow `(SomeDropType, 42).1` as an expression if `SomeDropType`'s `Drop` impl
+was declared with `const impl Drop`?
