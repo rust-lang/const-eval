@@ -97,7 +97,7 @@ compile-time instead of run-time should not alter program behavior.
 
 ### 4. Drop
 
-Expressions containing types that implement `Drop` (or have a field implementing `Drop`)
+Expressions containing "needs drop" types
 can never be promoted. If such an expression were promoted, the `Drop` impl would
 never get called on the value, even though the user did not explicitly request such
 behavior by using an explicit `const` or `static` item.
