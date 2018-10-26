@@ -75,8 +75,8 @@ impl Drop for Foo {
     }
 }
 
-const FOO: Foo = Foo; // Ok
-static FOOO: Foo = Foo; // Ok
+const FOO: Foo = Foo; // Ok, drop is run at each use site in runtime code
+static FOOO: Foo = Foo; // Ok, drop is never run
 
 // Not ok, cannot run `Foo::drop` because it's not a const fn
 const BAR: i32 = (Foo, 42).1;
