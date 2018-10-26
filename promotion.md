@@ -97,7 +97,19 @@ compile-time instead of run-time should not alter program behavior.
 
 ### 4. Drop
 
-TODO: Fill this with information.
+Expressions containing "needs drop" types
+can never be promoted. If such an expression were promoted, the `Drop` impl would
+never get called on the value, even though the user did not explicitly request such
+behavior by using an explicit `const` or `static` item.
+
+As expression promotion is essentially the silent insertion of a `static` item, and
+`static` items never have their `Drop` impl called, the `Drop` impl of the promoted
+value would never get called.
+
+While it is sound to `std::mem::forget` any value and thus not call its `Drop` impl,
+it is unlikely to be the desired behavior in most cases and very likey to be confusing
+to the user. If such behavior is desired, the user can still use an explicit `static`
+or `const` item and refer to that.
 
 ## Open questions
 

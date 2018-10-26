@@ -59,6 +59,36 @@ ecosystem that would break if we just started enforcing this now. See
 [this issue](https://github.com/rust-lang/rust/issues/49206) and the
 [PR attempting to fix this](https://github.com/rust-lang/rust/pull/54424/).
 
+### `Drop`
+
+Values of "needs drop" types
+can only be used as the final initialization value of a `const` or `static` item.
+They may not be used as intermediate values that would be dropped before the item
+were initialized. As an example:
+
+```rust
+struct Foo;
+
+impl Drop for Foo {
+    fn drop(&mut self) {
+        println!("foo dropped");
+    }
+}
+
+const FOO: Foo = Foo; // Ok, drop is run at each use site in runtime code
+static FOOO: Foo = Foo; // Ok, drop is never run
+
+// Not ok, cannot run `Foo::drop` because it's not a const fn
+const BAR: i32 = (Foo, 42).1;
+```
+
+This restriction might be lifted in the future after trait impls
+may be declared `const` (https://github.com/rust-rfcs/const-eval/pull/8).
+
+Note that in promoteds this restriction can never be lifted, because
+otherwise we would silently stop calling the `Drop` impl at runtime and
+pull it to much earlier (compile-time).
+
 ## Reading statics
 
 Beyond values of reference type, we have to be careful that *computing* a
