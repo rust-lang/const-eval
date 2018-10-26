@@ -61,7 +61,7 @@ ecosystem that would break if we just started enforcing this now. See
 
 ### `Drop`
 
-Values of types that manually implement `Drop` (or contain fields/variants that do),
+Values of "needs drop" types
 can only be used as the final initialization value of a `const` or `static` item.
 They may not be used as intermediate values that would be dropped before the item
 were initialized. As an example:
