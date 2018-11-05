@@ -150,6 +150,24 @@ impl would suddenly stop being `const`, without any visible change to the API. T
 be allowed for the same reason as why we're not inferring `const` on functions: changes to private
 things should not affect the constness of public things, because that is not compatible with semver.
 
+One possible solution is to require an explicit `const` in the derive:
+
+```rust
+#[derive(const Clone)]
+pub struct Foo(Bar);
+
+struct Bar;
+
+const impl Clone for Bar {
+    fn clone(&self) -> Self { Bar }
+}
+```
+
+which would generate a `const impl Clone for Foo` block which would fail to compile if any of `Foo`'s
+fields (so just `Bar` in this example) are not implementing `Clone` via `const impl`. The obligation is
+now on the crate author to keep the public API semver compatible, but they can't accidentally fail to
+uphold that obligation by changing private things.
+
 ## RPIT (Return position impl trait)
 
 ```rust
