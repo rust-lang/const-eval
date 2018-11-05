@@ -131,6 +131,46 @@ It might also be desirable to make the automatic `Fn*` impls on function types a
 This change should probably go in hand with allowing `const fn` pointers on const functions
 that support being called (in contrast to regular function pointers).
 
+## Deriving `const impl`s
+
+```rust
+#[derive(Clone)]
+pub struct Foo(Bar);
+
+struct Bar;
+
+const impl Clone for Bar {
+    fn clone(&self) -> Self { Bar }
+}
+```
+
+could theoretically have a scheme inferring `Foo`'s `Clone` impl to be `const`. If some time
+later the `const impl Clone for Bar` (a private type) is changed to just `impl`, `Foo`'s `Clone`
+impl would suddenly stop being `const`, without any visible change to the API. This should not
+be allowed for the same reason as why we're not inferring `const` on functions: changes to private
+things should not affect the constness of public things, because that is not compatible with semver.
+
+## RPIT (Return position impl trait)
+
+```rust
+const fn foo() -> impl Bar { /* code here */ }
+```
+
+does not allow us to call any methods on the result of a call to `foo`, if we are in a
+const context. It seems like a natural extension to this RFC to allow
+
+```rust
+const fn foo() -> impl const Bar { /* code here */ }
+```
+
+which requires that the function only returns types with `const impl Bar` blocks.
+
+## Specialization
+
+Impl specialization is still unstable. There should be a separate RFC for declaring how
+const impl blocks and specialization interact. For now one may not have both `default`
+and `const` modifiers on `impl` blocks.
+
 # Unresolved questions
 [unresolved-questions]: #unresolved-questions
 
@@ -148,7 +188,8 @@ const impl<T: Add> Add for Foo<T> {
 ```
 
 would allow calling `Foo(String::new()) + Foo(String::new())` even though that is (at the time
-of writing this RFC) most definitely not const.
+of writing this RFC) most definitely not const, because `String` only has an `impl Add for String`
+and not a `const impl Add for String`.
 
 This would go in hand with the current scheme for const functions, which may also be called
 at runtime with runtime arguments, but are checked for soundness as if they were called in
@@ -158,3 +199,23 @@ a const context.
 
 Should we also allow `(SomeDropType, 42).1` as an expression if `SomeDropType`'s `Drop` impl
 was declared with `const impl Drop`?
+
+## Require `const` bounds on everything inside a `const impl` block?
+
+Instead of inferring `const`ness on all bounds and functions inside a `const impl` block,
+we force the user to supply these bounds. This is more consistent with not inferring `const`
+on `const` function argument types and generic bounds. The `Hash` example from above would
+then look like
+
+```rust
+const impl Hash for MyInt {
+    const fn hash<H>(
+        &self,
+        state: &mut H,
+    )
+        where H: const Hasher
+    {
+        state.write(&[self.0 as u8]);
+    }
+}
+```
