@@ -114,13 +114,13 @@ some extensions of the miri engine that are already implemented in miri) even
 though it uses raw pointer operations:
 ```rust
 const fn test_eq<T>(x: &T, y: &T) -> bool {
-    unsafe { x as *const _ == y as *const _ }
+    unconst { x as *const _ == y as *const _ }
 }
 ```
 On the other hand, the following function is *not* const-safe and hence it is considered a bug to mark it as such:
 ```
 const fn convert<T>(x: &T) -> usize {
-    unsafe { x as *const _ as usize }
+    unconst { x as *const _ as usize }
 }
 ```
 
