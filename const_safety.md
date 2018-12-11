@@ -113,16 +113,27 @@ const-safe result.  For example, the following function is const-safe (after
 some extensions of the miri engine that are already implemented in miri) even
 though it uses raw pointer operations:
 ```rust
-const fn test_eq<T>(x: &T, y: &T) -> bool {
-    x as *const _ == y as *const _
+const fn slice_eq(x: &[u32], y: &[u32]) -> bool {
+    if x.len() != y.len() {
+        return false;
+    }
+    // equal length and address -> memory must be equal, too
+    if unconst { x as *const [u32] as *const u32 == y as *const [u32] as *const u32 } {
+        return true;
+    }
+    // assume the following is legal const code for the purpose of this function
+    x.iter().eq(y.iter())
 }
 ```
 On the other hand, the following function is *not* const-safe and hence it is considered a bug to mark it as such:
 ```
-const fn convert<T>(x: &T) -> usize {
-  x as *const _ as usize
+const fn ptr_eq<T>(x: &T, y: &T) -> bool {
+    unconst { x as *const T == y as *const T }
 }
 ```
+
+If the function were invoked as `ptr_eq(&42, &42)` the result depends on the potential
+deduplication of the memory of the `42`s.
 
 ## Open questions
 
