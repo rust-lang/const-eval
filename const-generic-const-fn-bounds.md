@@ -63,6 +63,23 @@ const impl Hash for MyInt {
 }
 ```
 
+## Drop
+
+A notable use case of `const impl` is defining `Drop` impls. If you write
+
+```rust
+struct SomeDropType<'a>(&'a Cell<u32>);
+const impl Drop for SomeDropType {
+    fn drop(&mut self) {
+        self.0.set(self.0.get() - 1);
+    }
+}
+```
+
+Then you are allowed to actually let a value of `SomeDropType` get dropped within a constant
+evaluation. This means `(SomeDropType(&Cell::new(42)), 42).1` is now allowed, because we can prove
+that everything from the creation of the value to the destruction is const evaluable.
+
 # Reference-level explanation
 [reference-level-explanation]: #reference-level-explanation
 
@@ -212,11 +229,6 @@ and not a `const impl Add for String`.
 This would go in hand with the current scheme for const functions, which may also be called
 at runtime with runtime arguments, but are checked for soundness as if they were called in
 a const context.
-
-## Drop
-
-Should we also allow `(SomeDropType, 42).1` as an expression if `SomeDropType`'s `Drop` impl
-was declared with `const impl Drop`?
 
 ## Require `const` bounds on everything inside a `const impl` block?
 
