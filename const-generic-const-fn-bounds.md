@@ -87,7 +87,9 @@ The implementation of this RFC is (in contrast to some of its alternatives) most
 changes around the syntax of the language (adding `const` modifiers in a few places)
 and ensuring that lowering to HIR and MIR keeps track of that.
 The miri engine already fully supports calling methods on generic
-bounds, there's just no way of declaring them.
+bounds, there's just no way of declaring them. Checking methods for constness is already implemented
+for inherent methods. The implementation will have to extend those checks to also run on methods
+of `const impl` items.
 
 # Drawbacks
 [drawbacks]: #drawbacks
