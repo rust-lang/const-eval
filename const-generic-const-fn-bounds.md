@@ -6,7 +6,7 @@
 # Summary
 [summary]: #summary
 
-Allow `const impl`s for trait impls where all method impls are checked as const fn.
+Allow `impl const Trait` for trait impls where all method impls are checked as const fn.
 
 Make it legal to declare trait bounds on generic parameters of const functions and allow
 the body of the const fn to call methods on the generic parameters that have a `const` modifier
@@ -39,7 +39,7 @@ The obligation is passed to the caller of your `triple_add` function to supply a
 
 ```rust
 struct MyInt(i8);
-const impl Add for MyInt {
+impl const Add for MyInt {
     fn add(self, other: Self) -> Self {
         MyInt(self.0 + other.0)
     }
@@ -51,7 +51,7 @@ so in the following `H` is required to have a const impl of `Hasher`, so that
 methods on `state` are callable.
 
 ```rust
-const impl Hash for MyInt {
+impl const Hash for MyInt {
     fn hash<H>(
         &self,
         state: &mut H,
@@ -65,11 +65,11 @@ const impl Hash for MyInt {
 
 ## Drop
 
-A notable use case of `const impl` is defining `Drop` impls. If you write
+A notable use case of `impl const` is defining `Drop` impls. If you write
 
 ```rust
 struct SomeDropType<'a>(&'a Cell<u32>);
-const impl Drop for SomeDropType {
+impl const Drop for SomeDropType {
     fn drop(&mut self) {
         self.0.set(self.0.get() - 1);
     }
@@ -89,7 +89,7 @@ and ensuring that lowering to HIR and MIR keeps track of that.
 The miri engine already fully supports calling methods on generic
 bounds, there's just no way of declaring them. Checking methods for constness is already implemented
 for inherent methods. The implementation will have to extend those checks to also run on methods
-of `const impl` items.
+of `impl const` items.
 
 # Drawbacks
 [drawbacks]: #drawbacks
@@ -150,7 +150,7 @@ It might also be desirable to make the automatic `Fn*` impls on function types a
 This change should probably go in hand with allowing `const fn` pointers on const functions
 that support being called (in contrast to regular function pointers).
 
-## Deriving `const impl`s
+## Deriving `impl const`
 
 ```rust
 #[derive(Clone)]
@@ -158,13 +158,13 @@ pub struct Foo(Bar);
 
 struct Bar;
 
-const impl Clone for Bar {
+impl const Clone for Bar {
     fn clone(&self) -> Self { Bar }
 }
 ```
 
 could theoretically have a scheme inferring `Foo`'s `Clone` impl to be `const`. If some time
-later the `const impl Clone for Bar` (a private type) is changed to just `impl`, `Foo`'s `Clone`
+later the `impl const Clone for Bar` (a private type) is changed to just `impl`, `Foo`'s `Clone`
 impl would suddenly stop being `const`, without any visible change to the API. This should not
 be allowed for the same reason as why we're not inferring `const` on functions: changes to private
 things should not affect the constness of public things, because that is not compatible with semver.
@@ -177,13 +177,13 @@ pub struct Foo(Bar);
 
 struct Bar;
 
-const impl Clone for Bar {
+impl const Clone for Bar {
     fn clone(&self) -> Self { Bar }
 }
 ```
 
-which would generate a `const impl Clone for Foo` block which would fail to compile if any of `Foo`'s
-fields (so just `Bar` in this example) are not implementing `Clone` via `const impl`. The obligation is
+which would generate a `impl const Clone for Foo` block which would fail to compile if any of `Foo`'s
+fields (so just `Bar` in this example) are not implementing `Clone` via `impl const`. The obligation is
 now on the crate author to keep the public API semver compatible, but they can't accidentally fail to
 uphold that obligation by changing private things.
 
@@ -200,7 +200,7 @@ const context. It seems like a natural extension to this RFC to allow
 const fn foo() -> impl const Bar { /* code here */ }
 ```
 
-which requires that the function only returns types with `const impl Bar` blocks.
+which requires that the function only returns types with `impl const Bar` blocks.
 
 ## Specialization
 
@@ -211,13 +211,13 @@ and `const` modifiers on `impl` blocks.
 # Unresolved questions
 [unresolved-questions]: #unresolved-questions
 
-Should `const impl` blocks additionally generate impls that are not const if any generic
+Should `impl const` blocks additionally generate impls that are not const if any generic
 parameters are not const?
 
 E.g.
 
 ```rust
-const impl<T: Add> Add for Foo<T> {
+impl<T: Add> const Add for Foo<T> {
     fn add(self, other: Self) -> Self {
         Foo(self.0 + other.0)
     }
@@ -226,21 +226,21 @@ const impl<T: Add> Add for Foo<T> {
 
 would allow calling `Foo(String::new()) + Foo(String::new())` even though that is (at the time
 of writing this RFC) most definitely not const, because `String` only has an `impl Add for String`
-and not a `const impl Add for String`.
+and not an `impl const Add for String`.
 
 This would go in hand with the current scheme for const functions, which may also be called
 at runtime with runtime arguments, but are checked for soundness as if they were called in
 a const context.
 
-## Require `const` bounds on everything inside a `const impl` block?
+## Require `const` bounds on everything inside an `impl const` block?
 
-Instead of inferring `const`ness on all bounds and functions inside a `const impl` block,
+Instead of inferring `const`ness on all bounds and functions inside a `impl const` block,
 we force the user to supply these bounds. This is more consistent with not inferring `const`
 on `const` function argument types and generic bounds. The `Hash` example from above would
 then look like
 
 ```rust
-const impl Hash for MyInt {
+impl const Hash for MyInt {
     const fn hash<H>(
         &self,
         state: &mut H,
