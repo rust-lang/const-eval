@@ -211,6 +211,8 @@ and `const` modifiers on `impl` blocks.
 # Unresolved questions
 [unresolved-questions]: #unresolved-questions
 
+## Runtime uses don't have `const` restrictions?
+
 Should `impl const` blocks additionally generate impls that are not const if any generic
 parameters are not const?
 
@@ -224,7 +226,7 @@ impl<T: Add> const Add for Foo<T> {
 }
 ```
 
-would allow calling `Foo(String::new()) + Foo(String::new())` even though that is (at the time
+would allow calling `Foo(String::from("foo")) + Foo(String::from("bar"))` even though that is (at the time
 of writing this RFC) most definitely not const, because `String` only has an `impl Add for String`
 and not an `impl const Add for String`.
 
