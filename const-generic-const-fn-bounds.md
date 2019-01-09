@@ -22,7 +22,7 @@ generic parameter type), because they are fully unconstrained.
 # Guide-level explanation
 [guide-level-explanation]: #guide-level-explanation
 
-You can call call methods of generic parameters of a const function, because they are implicitly assumed to be
+You can call methods of generic parameters of a const function, because they are implicitly assumed to be
 `const fn`. For example, the `Add` trait declaration has an additional `const` before the trait name, so
 you can use it as a trait bound on your generic parameters:
 
