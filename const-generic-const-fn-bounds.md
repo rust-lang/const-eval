@@ -46,22 +46,25 @@ impl const Add for MyInt {
 }
 ```
 
-The const requirement is propagated to all bounds of the impl or its methods,
+The const requirement is required on all bounds of the impl and its methods,
 so in the following `H` is required to have a const impl of `Hasher`, so that
 methods on `state` are callable.
 
 ```rust
 impl const Hash for MyInt {
-    fn hash<H>(
+    const fn hash<H>(
         &self,
         state: &mut H,
     )
-        where H: Hasher
+        where H: const Hasher
     {
         state.write(&[self.0 as u8]);
     }
 }
 ```
+
+While these `const` keywords could be inferred (after all, they are required), requiring them is
+forward compatible to schemes in the future that allow more fine grained control.
 
 ## Drop
 
@@ -80,16 +83,66 @@ Then you are allowed to actually let a value of `SomeDropType` get dropped withi
 evaluation. This means `(SomeDropType(&Cell::new(42)), 42).1` is now allowed, because we can prove
 that everything from the creation of the value to the destruction is const evaluable.
 
+## Runtime uses don't have `const` restrictions?
+
+`impl const` blocks additionally generate impls that are not const if any generic
+parameters are not const.
+
+E.g.
+
+```rust
+impl<T: const Add> const Add for Foo<T> {
+    fn add(self, other: Self) -> Self {
+        Foo(self.0 + other.0)
+    }
+}
+```
+
+allows calling `Foo(String::from("foo")) + Foo(String::from("bar"))` even though that is (at the time
+of writing this RFC) most definitely not const, because `String` only has an `impl Add for String`
+and not an `impl const Add for String`.
+
+This goes in hand with the current scheme for const functions, which may also be called
+at runtime with runtime arguments, but are checked for soundness as if they were called in
+a const context. E.g. the following function may be called as
+`add(String::from("foo"), String::from("bar"))` at runtime.
+
+```rust
+const fn add<T: const Add>(a: T, b: T) -> T {
+    a + b
+}
+```
+
+This feature could have been added in the future in a backwards compatible manner, but without it
+the use of `const` impls is very restricted for the generic types of the standard library due to
+backwards compatibility.
+Changing an impl to only allow generic types which have a `const` impl for their bounds would break
+situations like the one described above.
+
 # Reference-level explanation
 [reference-level-explanation]: #reference-level-explanation
 
 The implementation of this RFC is (in contrast to some of its alternatives) mostly
-changes around the syntax of the language (adding `const` modifiers in a few places)
+changes around the syntax of the language (allowing `const` modifiers in a few places)
 and ensuring that lowering to HIR and MIR keeps track of that.
 The miri engine already fully supports calling methods on generic
 bounds, there's just no way of declaring them. Checking methods for constness is already implemented
 for inherent methods. The implementation will have to extend those checks to also run on methods
 of `impl const` items.
+
+## Implementation instructions
+
+1. Add an `is_const` field to the AST's `TraitRef`
+2. Adjust the Parser to support `const` modifiers before trait bounds
+3. Add an `is_const` field to the HIR's `TraitRef`
+4. Adjust lowering to pass through the `is_const` field from AST to HIR
+5. Add a a check to `librustc_typeck/check/wfcheck.rs` ensuring that all generic bounds
+    in an `impl const` block have the `in_const` flag set and all methods' `constness` field is
+    `Const`.
+6. Feature gate instead of ban `Predicate::Trait` other than `Sized` in
+    `librustc_mir/transform/qualify_min_const_fn.rs`
+7. Remove the call in https://github.com/rust-lang/rust/blob/f8caa321c7c7214a6c5415e4b3694e65b4ff73a7/src/librustc_passes/ast_validation.rs#L306
+8. Adjust the reference and the book to reflect these changes.
 
 # Drawbacks
 [drawbacks]: #drawbacks
@@ -211,45 +264,4 @@ and `const` modifiers on `impl` blocks.
 # Unresolved questions
 [unresolved-questions]: #unresolved-questions
 
-## Runtime uses don't have `const` restrictions?
-
-Should `impl const` blocks additionally generate impls that are not const if any generic
-parameters are not const?
-
-E.g.
-
-```rust
-impl<T: Add> const Add for Foo<T> {
-    fn add(self, other: Self) -> Self {
-        Foo(self.0 + other.0)
-    }
-}
-```
-
-would allow calling `Foo(String::from("foo")) + Foo(String::from("bar"))` even though that is (at the time
-of writing this RFC) most definitely not const, because `String` only has an `impl Add for String`
-and not an `impl const Add for String`.
-
-This would go in hand with the current scheme for const functions, which may also be called
-at runtime with runtime arguments, but are checked for soundness as if they were called in
-a const context.
-
-## Require `const` bounds on everything inside an `impl const` block?
-
-Instead of inferring `const`ness on all bounds and functions inside a `impl const` block,
-we force the user to supply these bounds. This is more consistent with not inferring `const`
-on `const` function argument types and generic bounds. The `Hash` example from above would
-then look like
-
-```rust
-impl const Hash for MyInt {
-    const fn hash<H>(
-        &self,
-        state: &mut H,
-    )
-        where H: const Hasher
-    {
-        state.write(&[self.0 as u8]);
-    }
-}
-```
+Everything has been addressed in the reviews
