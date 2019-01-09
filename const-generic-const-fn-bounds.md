@@ -144,6 +144,18 @@ of `impl const` items.
 7. Remove the call in https://github.com/rust-lang/rust/blob/f8caa321c7c7214a6c5415e4b3694e65b4ff73a7/src/librustc_passes/ast_validation.rs#L306
 8. Adjust the reference and the book to reflect these changes.
 
+## Const type theory
+
+This RFC was written after weighing practical issues against each other and finding the sweet spot
+that supports most use cases, is sound and fairly intuitive to use. A different approach from a
+type theoretical perspective started out with a much purer scheme, but, when exposed to the
+constraints required, evolved to essentially the same scheme as this RFC. We thus feel confident
+that this RFC is the minimal viable scheme for having bounds on generic parameters of const
+functions. The discussion and evolution of the type theoretical scheme can be found
+[here](https://github.com/rust-rfcs/const-eval/pull/8#issuecomment-452396020) and is only 12 posts
+and a linked three page document long. It is left as an exercise to the reader to read the
+discussion themselves.
+
 # Drawbacks
 [drawbacks]: #drawbacks
 
