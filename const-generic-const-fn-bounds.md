@@ -23,11 +23,11 @@ generic parameter type), because they are fully unconstrained.
 [guide-level-explanation]: #guide-level-explanation
 
 You can call methods of generic parameters of a const function, because they are implicitly assumed to be
-`const fn`. For example, the `Add` trait declaration has an additional `const` before the trait name, so
-you can use it as a trait bound on your generic parameters:
+`const fn`. For example, the `Add` trait bound can be used to call `Add::add` or `+` on the arguments
+with that bound.
 
 ```rust
-const fn triple_add<T: const Add>(a: T, b: T, c: T) -> T {
+const fn triple_add<T: Add>(a: T, b: T, c: T) -> T {
     a + b + c
 }
 ```
@@ -46,25 +46,22 @@ impl const Add for MyInt {
 }
 ```
 
-The const requirement is required on all bounds of the impl and its methods,
+The const requirement is inferred on all bounds of the impl and its methods,
 so in the following `H` is required to have a const impl of `Hasher`, so that
 methods on `state` are callable.
 
 ```rust
 impl const Hash for MyInt {
-    const fn hash<H>(
+    fn hash<H>(
         &self,
         state: &mut H,
     )
-        where H: const Hasher
+        where H: Hasher
     {
         state.write(&[self.0 as u8]);
     }
 }
 ```
-
-While these `const` keywords could be inferred (after all, they are required), requiring them is
-forward compatible to schemes in the future that allow more fine grained control.
 
 ## Drop
 
@@ -101,7 +98,7 @@ parameters are not const.
 E.g.
 
 ```rust
-impl<T: const Add> const Add for Foo<T> {
+impl<T: Add> const Add for Foo<T> {
     fn add(self, other: Self) -> Self {
         Foo(self.0 + other.0)
     }
@@ -118,7 +115,7 @@ a const context. E.g. the following function may be called as
 `add(String::from("foo"), String::from("bar"))` at runtime.
 
 ```rust
-const fn add<T: const Add>(a: T, b: T) -> T {
+const fn add<T: Add>(a: T, b: T) -> T {
     a + b
 }
 ```
@@ -128,6 +125,28 @@ the use of `const` impls is very restricted for the generic types of the standar
 backwards compatibility.
 Changing an impl to only allow generic types which have a `const` impl for their bounds would break
 situations like the one described above.
+
+## `?const` opt out
+
+There is often desire to add bounds to a `const` function's generic arguments, without wanting to
+call any of the methods on those generic bounds. Prominent examples are `new` methods:
+
+```rust
+struct Foo<T: Trait>(T);
+const fn new<T: Trait>(t: T) -> Foo<T> {
+    Foo(t)
+}
+```
+
+Unfortunately, with the given syntax in this RFC, one can now only call the `new` method if `T` has
+an `impl const Trait for T { ... }`. Thus an opt-out similar to `?Sized` can be used:
+
+```rust
+struct Foo<T: Trait>(T);
+const fn new<T: ?const Trait>(t: T) -> Foo<T> {
+    Foo(t)
+}
+```
 
 # Reference-level explanation
 [reference-level-explanation]: #reference-level-explanation
@@ -142,13 +161,12 @@ of `impl const` items.
 
 ## Implementation instructions
 
-1. Add an `is_const` field to the AST's `TraitRef`
-2. Adjust the Parser to support `const` modifiers before trait bounds
-3. Add an `is_const` field to the HIR's `TraitRef`
-4. Adjust lowering to pass through the `is_const` field from AST to HIR
-5. Add a a check to `librustc_typeck/check/wfcheck.rs` ensuring that all generic bounds
-    in an `impl const` block have the `in_const` flag set and all methods' `constness` field is
-    `Const`.
+1. Add an `maybe_const` field to the AST's `TraitRef`
+2. Adjust the Parser to support `?const` modifiers before trait bounds
+3. Add an `maybe_const` field to the HIR's `TraitRef`
+4. Adjust lowering to pass through the `maybe_const` field from AST to HIR
+5. Add a a check to `librustc_typeck/check/wfcheck.rs` ensuring that no generic bounds
+    in an `impl const` block have the `maybe_const` flag set
 6. Feature gate instead of ban `Predicate::Trait` other than `Sized` in
     `librustc_mir/transform/qualify_min_const_fn.rs`
 7. Remove the call in https://github.com/rust-lang/rust/blob/f8caa321c7c7214a6c5415e4b3694e65b4ff73a7/src/librustc_passes/ast_validation.rs#L306
@@ -189,14 +207,18 @@ can be applied to specific methods. E.g. `where <T as Add>::add: const` or somet
 the sort. This design is more complex than the current one and we'd probably want the
 current one as sugar anyway
 
-## No explicit `const` bounds
+## Require `const` bounds everywhere
 
-One could require no `const` on the bounds (e.g. `T: Trait`) and assume constness for all
-bounds. An opt-out via `T: ?const Trait` would then allow declaring bounds that cannot be
-used for calling methods. This design causes discrepancies with `const fn` pointers as
-arguments (where the constness would be needed, as normal function pointers already exist
-as the type of constants). Also it is not forward compatible to allowing `const` trait bounds
-on non-const functions
+One could require `const` on the bounds (e.g. `T: const Trait`) instead of assuming constness for all
+bounds. That design would not be forward compatible to allowing `const` trait bounds
+on non-const functions, e.g. in
+
+```rust
+fn foo<T: const Bar>() -> i32 {
+    const FOO: i32 = T::bar();
+    FOO
+}
+```
 
 ## Infer all the things
 
@@ -282,6 +304,93 @@ which requires that the function only returns types with `impl const Bar` blocks
 Impl specialization is still unstable. There should be a separate RFC for declaring how
 const impl blocks and specialization interact. For now one may not have both `default`
 and `const` modifiers on `impl` blocks.
+
+## `const` trait methods
+
+This RFC does not touch `trait` methods at all, all traits are defined as they would be defined
+without `const` functions existing. A future extension could allow
+
+```rust
+trait Foo {
+    const fn a() -> i32;
+    fn b() -> i32;
+}
+```
+
+Where all trait impls *must* provide a `const` function for `a`, allowing
+
+```rust
+const fn foo<T: ?const Foo>() -> i32 {
+    T::a()
+}
+```
+
+even though the `?const` modifier explicitly opts out of constness.
+
+## `?const` modifiers in trait methods
+
+This RFC does not touch `trait` methods at all, all traits are defined as they would be defined
+without `const` functions existing. A future extension could allow
+
+```rust
+trait Foo {
+    fn a<T: ?const Bar>() -> i32;
+}
+```
+
+which does not force `impl const Foo for Type` to now require passing a `T` with an `impl const Bar`
+to the `a` method.
+
+## `const` function pointers
+
+```rust
+const fn foo(f: fn() -> i32) -> i32 {
+    f()
+}
+```
+
+is currently illegal. While we can change the language to allow this feature, two questions make
+themselves known:
+
+1. fn pointers in constants
+
+    ```rust
+    const F: fn() -> i32 = ...;
+    ```
+
+    is already legal in Rust today, even though the `F` doesn't need to be a `const` function.
+
+2. Opt out bounds are ugly
+
+    I don't think it's either intuitive nor readable to write the following
+
+    ```rust
+    const fn foo(f: ?const fn() -> i32) -> i32 {
+        // not allowed to call `f` here, because we can't guarantee that it points to a `const fn`
+    }
+    ```
+
+Thus it seems useful to prefix function pointers to `const` functions with `const`:
+
+```rust
+const fn foo(f: const fn() -> i32) -> i32 {
+    f()
+}
+const fn bar(f: fn() -> i32) -> i32 {
+    f() // ERROR
+}
+```
+
+This opens up the curious situation of `const` function pointers in non-const functions:
+
+```rust
+fn foo(f: const fn() -> i32) -> i32 {
+    f()
+}
+```
+
+Which is useless except for ensuring some sense of "purity" of the function pointer ensuring that
+subsequent calls will only modify global state if passed in via arguments.
 
 # Unresolved questions
 [unresolved-questions]: #unresolved-questions
