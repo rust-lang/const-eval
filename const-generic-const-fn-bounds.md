@@ -83,6 +83,16 @@ Then you are allowed to actually let a value of `SomeDropType` get dropped withi
 evaluation. This means `(SomeDropType(&Cell::new(42)), 42).1` is now allowed, because we can prove
 that everything from the creation of the value to the destruction is const evaluable.
 
+Note that all fields of types with a `const Drop` impl must have `const Drop` impls, too, as the
+compiler will automatically generate `Drop::drop` calls to the fields:
+
+```rust
+struct Foo;
+impl Drop for Foo { fn drop(&mut self) {} }
+struct Bar(Foo);
+impl const Drop for Foo { fn drop(&mut self) {} } // not allowed
+```
+
 ## Runtime uses don't have `const` restrictions?
 
 `impl const` blocks additionally generate impls that are not const if any generic
