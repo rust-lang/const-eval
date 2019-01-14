@@ -129,7 +129,7 @@ situations like the one described above.
 ## `?const` opt out
 
 There is often desire to add bounds to a `const` function's generic arguments, without wanting to
-call any of the methods on those generic bounds. Prominent examples are `new` methods:
+call any of the methods on those generic bounds. Prominent examples are `new` functions:
 
 ```rust
 struct Foo<T: Trait>(T);
@@ -138,7 +138,8 @@ const fn new<T: Trait>(t: T) -> Foo<T> {
 }
 ```
 
-Unfortunately, with the given syntax in this RFC, one can now only call the `new` method if `T` has
+Unfortunately, with the given syntax in this RFC, one can now only call the `new` function in a const
+context if `T` has
 an `impl const Trait for T { ... }`. Thus an opt-out similar to `?Sized` can be used:
 
 ```rust
