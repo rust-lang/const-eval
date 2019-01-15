@@ -185,12 +185,14 @@ in an `impl`. This has several uses, most notably
 * adding new methods is not a breaking change if they also have a default body
 
 In order to keep both advantages in the presence of `impl const`s, we need a way to declare the
-method default body as being `const`. The author of this RFC considers prepending the default body's
-method signature with `const` to be the most intuitive syntax.
+method default body as being `const`. The exact syntax for doing so is left as an open question to
+be decided during the implementation and following final comment period. For now one can add the
+`#[default_method_body_is_const]` attribute to the method.
 
 ```rust
 trait Foo {
-    const fn bar() {}
+    #[default_method_body_is_const]
+    fn bar() {}
 }
 ```
 
@@ -493,4 +495,5 @@ the function, would allow the above function to actually exist.
 # Unresolved questions
 [unresolved-questions]: #unresolved-questions
 
-Everything has been addressed in the reviews
+The syntax for specifying that a trait method's default body is `const` is left unspecified and uses
+the `#[default_method_body_is_const]` attribute as the placeholder syntax.
