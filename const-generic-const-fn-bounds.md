@@ -63,6 +63,33 @@ impl const Hash for MyInt {
 }
 ```
 
+The same goes for associated types' bounds: all the bounds require `impl const`s for the type used
+for the associated type:
+
+```rust
+trait Foo {
+    type Bar: Add;
+}
+impl Foo for A {
+    type Bar = B; // B must have an `impl const Add for B`
+}
+```
+
+If an associated type has no bounds in the trait, there are no restrictions to what types may be used
+for it.
+
+These rules for associated types exist to make this RFC forward compatible with adding const default bodies
+for trait methods. These are further discussed in the "future work" section.
+
+## Generic `impl` blocks
+
+Similar to generic parameters on `const` functions, one can have generic parameters on `impl` blocks.
+These follow the same rules as bounds on `const` functions:
+
+* all bounds are required to have `impl const` for substituted types if the impl is used in a const context
+    * except in the presence of `?const` (see below)
+* if the impl is used at runtime, there are no restrictions what kind of bounds are required
+
 ## Drop
 
 A notable use case of `impl const` is defining `Drop` impls. If you write
@@ -329,6 +356,23 @@ const fn foo<T: ?const Foo>() -> i32 {
 
 even though the `?const` modifier explicitly opts out of constness.
 
+The author of this RFC believes this feature to be unnecessary, since one can get the same effect
+by splitting the trait into its const and nonconst parts:
+
+```rust
+trait FooA {
+    fn a() -> i32;
+}
+trait FooB {
+    fn b() -> i32;
+}
+const fn foo<T: FooA + ?const FooB>() -> i32 {
+    T::a()
+}
+```
+
+Impls of the two traits can then decide constness of either impl at their leasure.
+
 ### `const` traits
 
 A further extension could be `const trait` declarations, which desugar to all methods being `const`:
@@ -409,6 +453,42 @@ fn foo(f: const fn() -> i32) -> i32 {
 
 Which is useless except for ensuring some sense of "purity" of the function pointer ensuring that
 subsequent calls will only modify global state if passed in via arguments.
+
+## explicit `const` bounds
+
+`const` on the bounds (e.g. `T: const Trait`) requires an `impl const Trait` for any types used to
+replace `T`. This allows `const` trait bounds on any (even non-const) functions, e.g. in
+
+```rust
+fn foo<T: const Bar>() -> i32 {
+    const FOO: i32 = T::bar();
+    FOO
+}
+```
+
+Which, once `const` items and array lengths inside of functions can make use of the generics of
+the function, would allow the above function to actually exist.
+
+## `const` default method bodies
+
+Trait methods can have default bodies for methods that are used if the method is not mentioned
+in an `impl`. This has several uses, most notably
+
+* reducing code repetition between impls that are all the same
+* adding new methods is not a breaking change if they also have a default body
+
+In order to keep both advantages in the presence of `impl const`s, we need a way to declare the
+method default body as being `const`. The author of this RFC considers prepending the default body's
+method signature with `const` to be the most intuitive syntax.
+
+```rust
+trait Foo {
+    const fn bar() {}
+}
+```
+
+While this conflicts with other future work ideas like `const` trait methods or `const trait` declarations,
+these features are unnecessary for full expressiveness as discussed in their respective sections.
 
 # Unresolved questions
 [unresolved-questions]: #unresolved-questions
