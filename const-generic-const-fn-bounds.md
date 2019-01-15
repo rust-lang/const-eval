@@ -176,6 +176,27 @@ const fn new<T: ?const Trait>(t: T) -> Foo<T> {
 }
 ```
 
+## `const` default method bodies
+
+Trait methods can have default bodies for methods that are used if the method is not mentioned
+in an `impl`. This has several uses, most notably
+
+* reducing code repetition between impls that are all the same
+* adding new methods is not a breaking change if they also have a default body
+
+In order to keep both advantages in the presence of `impl const`s, we need a way to declare the
+method default body as being `const`. The author of this RFC considers prepending the default body's
+method signature with `const` to be the most intuitive syntax.
+
+```rust
+trait Foo {
+    const fn bar() {}
+}
+```
+
+While this conflicts with future work ideas like `const` trait methods or `const trait` declarations,
+these features are unnecessary for full expressiveness as discussed in their respective sections.
+
 # Reference-level explanation
 [reference-level-explanation]: #reference-level-explanation
 
@@ -468,27 +489,6 @@ fn foo<T: const Bar>() -> i32 {
 
 Which, once `const` items and array lengths inside of functions can make use of the generics of
 the function, would allow the above function to actually exist.
-
-## `const` default method bodies
-
-Trait methods can have default bodies for methods that are used if the method is not mentioned
-in an `impl`. This has several uses, most notably
-
-* reducing code repetition between impls that are all the same
-* adding new methods is not a breaking change if they also have a default body
-
-In order to keep both advantages in the presence of `impl const`s, we need a way to declare the
-method default body as being `const`. The author of this RFC considers prepending the default body's
-method signature with `const` to be the most intuitive syntax.
-
-```rust
-trait Foo {
-    const fn bar() {}
-}
-```
-
-While this conflicts with other future work ideas like `const` trait methods or `const trait` declarations,
-these features are unnecessary for full expressiveness as discussed in their respective sections.
 
 # Unresolved questions
 [unresolved-questions]: #unresolved-questions
