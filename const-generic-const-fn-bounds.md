@@ -328,6 +328,22 @@ const fn foo<T: ?const Foo>() -> i32 {
 
 even though the `?const` modifier explicitly opts out of constness.
 
+### `const` traits
+
+A further extension could be `const trait` declarations, which desugar to all methods being `const`:
+
+```rust
+const trait V {
+    fn foo(C) -> D;
+    fn bar(E) -> F;
+}
+// ...desugars to...
+trait V {
+    const fn foo(C) -> D;
+    const fn bar(E) -> F;
+}
+```
+
 ## `?const` modifiers in trait methods
 
 This RFC does not touch `trait` methods at all, all traits are defined as they would be defined
