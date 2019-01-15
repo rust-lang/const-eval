@@ -184,6 +184,7 @@ functions. The discussion and evolution of the type theoretical scheme can be fo
 [here](https://github.com/rust-rfcs/const-eval/pull/8#issuecomment-452396020) and is only 12 posts
 and a linked three page document long. It is left as an exercise to the reader to read the
 discussion themselves.
+A summary of the result of the discussion can be found at the bottom of [this blog post](https://varkor.github.io/blog/2019/01/11/const-types-traits-and-implementations-in-Rust.html)
 
 # Drawbacks
 [drawbacks]: #drawbacks
