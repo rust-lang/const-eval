@@ -139,7 +139,7 @@ effect syntax nor effect semantics are proposed by this RFC, the following is ju
 purposes):
 
 ```rust
-impl<constness c, T: const(c) Add> const(c) Add for Foo<T> {
+impl<c: constness, T: const(c) Add> const(c) Add for Foo<T> {
     const(c) fn add(self, other: Self) -> Self {
         Foo(self.0 + other.0)
     }
@@ -166,7 +166,7 @@ const fn add<T: Add>(a: T, b: T) -> T {
 Using the same effect syntax from above:
 
 ```rust
-<constness c> const(c) fn add<T: const(c) Add>(a: T, b: T) -> T {
+<c: constness> const(c) fn add<T: const(c) Add>(a: T, b: T) -> T {
     a + b
 }
 ```
