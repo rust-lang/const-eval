@@ -119,8 +119,8 @@ impl const Drop for Foo { fn drop(&mut self) {} } // not allowed
 
 ## Runtime uses don't have `const` restrictions
 
-`impl const` blocks additionally generate impls that are not const if any generic
-parameters are not const.
+`impl const` blocks are treated as if the constness is a generic parameter
+(see also effect systems in the alternatives).
 
 E.g.
 
@@ -134,7 +134,23 @@ impl<T: Add> const Add for Foo<T> {
 
 allows calling `Foo(String::from("foo")) + Foo(String::from("bar"))` even though that is (at the time
 of writing this RFC) most definitely not const, because `String` only has an `impl Add for String`
-and not an `impl const Add for String`.
+and not an `impl const Add for String`. Expressed in some sort of effect system syntax (neither
+effect syntax nor effect semantics are proposed by this RFC, the following is just for demonstration
+purposes):
+
+```rust
+impl<constness c, T: const(c) Add> const(c) Add for Foo<T> {
+    const(c) fn add(self, other: Self) -> Self {
+        Foo(self.0 + other.0)
+    }
+}
+```
+
+In this scheme on can see that if the `c` parameter is set to `const`, the `T` parameter requires a
+`const Add` bound, and creates a `const Add` impl for `Foo<T>` which then has a `const fn add`
+method. On the other hand, if `c` is `?const`, we get a regular impl without any constness anywhere.
+Of course for regular impls one can still pass a `T` which has a `const Add` impl, but that won't
+cause any constness for `Foo<T>`.
 
 This goes in hand with the current scheme for const functions, which may also be called
 at runtime with runtime arguments, but are checked for soundness as if they were called in
@@ -146,6 +162,18 @@ const fn add<T: Add>(a: T, b: T) -> T {
     a + b
 }
 ```
+
+Using the same effect syntax from above:
+
+```rust
+<constness c> const(c) fn add<T: const(c) Add>(a: T, b: T) -> T {
+    a + b
+}
+```
+
+Here the value of `c` decides both whether the `add` function is `const` and whether its parameter
+`T` has a `const Add` impl. Since both use the same `constness` variable, `T` is guaranteed to have
+a `const Add` iff `add` is `const`.
 
 This feature could have been added in the future in a backwards compatible manner, but without it
 the use of `const` impls is very restricted for the generic types of the standard library due to
