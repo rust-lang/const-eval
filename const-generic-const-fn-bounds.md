@@ -117,7 +117,7 @@ struct Bar(Foo);
 impl const Drop for Foo { fn drop(&mut self) {} } // not allowed
 ```
 
-## Runtime uses don't have `const` restrictions?
+## Runtime uses don't have `const` restrictions
 
 `impl const` blocks additionally generate impls that are not const if any generic
 parameters are not const.
