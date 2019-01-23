@@ -70,7 +70,7 @@ for the associated type:
 trait Foo {
     type Bar: Add;
 }
-impl Foo for A {
+impl const Foo for A {
     type Bar = B; // B must have an `impl const Add for B`
 }
 ```
