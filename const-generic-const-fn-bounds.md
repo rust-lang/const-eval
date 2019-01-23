@@ -81,14 +81,24 @@ for it.
 These rules for associated types exist to make this RFC forward compatible with adding const default bodies
 for trait methods. These are further discussed in the "future work" section.
 
-## Generic `impl` blocks
+## Generic bounds
 
-Similar to generic parameters on `const` functions, one can have generic parameters on `impl` blocks.
-These follow the same rules as bounds on `const` functions:
+The above section skimmed over a few topics for brevity. First of all, `impl const` items can also
+have generic parameters and thus bounds on these parameters, and these bounds follow the same rules
+as bounds on generic parameters on `const` functions: all bounds can only be substituted with types
+that have `impl const` items for all the bounds. Thus the `T` in the following `impl` requires that
+when `MyType<T>` is used in a const context, `T` needs to have an `impl const Add for Foo`.
 
-* all bounds are required to have `impl const` for substituted types if the impl is used in a const context
-    * except in the presence of `?const` (see below)
-* if the impl is used at runtime, there are no restrictions what kind of bounds are required
+```rust
+impl<T: Add> const Add for MyType<T> {
+    /* some code here */
+}
+const FOO: MyType<u32> = ...;
+const BAR: MyType<u32> = FOO + FOO; // only legal because `u32: const Add`
+```
+
+Furthermore, if `MyType` is used outside a const context, there are no constness requirements on the
+bounds for types substituted for `T`.
 
 ## Drop
 
