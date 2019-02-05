@@ -46,6 +46,9 @@ impl const Add for MyInt {
 }
 ```
 
+You cannot implement both `const Add` and `Add` for any type, since the `const Add`
+impl is used as a regular impl outside of const contexts.
+
 The const requirement is inferred on all bounds of the impl and its methods,
 so in the following `H` is required to have a const impl of `Hasher`, so that
 methods on `state` are callable.
@@ -102,9 +105,16 @@ bounds for types substituted for `T`.
 
 ## Drop
 
-A notable use case of `impl const` is defining `Drop` impls. If you write
+A notable use case of `impl const` is defining `Drop` impls.
+Since const evaluation has no side effects, there is no simple example that
+showcases `const Drop` in any useful way. Instead we create a `Drop` impl that
+has user visible side effects:
 
 ```rust
+let x = Cell::new(42);
+SomeDropType(&x);
+// x is now 41
+
 struct SomeDropType<'a>(&'a Cell<u32>);
 impl const Drop for SomeDropType {
     fn drop(&mut self) {
@@ -113,8 +123,14 @@ impl const Drop for SomeDropType {
 }
 ```
 
-Then you are allowed to actually let a value of `SomeDropType` get dropped within a constant
-evaluation. This means `(SomeDropType(&Cell::new(42)), 42).1` is now allowed, because we can prove
+You are now allowed to actually let a value of `SomeDropType` get dropped within a constant
+evaluation. This means
+
+```rust
+(SomeDropType(&Cell::new(42)), 42).1
+```
+
+is now allowed, because we can prove
 that everything from the creation of the value to the destruction is const evaluable.
 
 Note that all fields of types with a `const Drop` impl must have `const Drop` impls, too, as the
@@ -140,11 +156,24 @@ impl<T: Add> const Add for Foo<T> {
         Foo(self.0 + other.0)
     }
 }
+#[derive(Debug)]
+struct Bar;
+impl Add for Bar {
+    fn add(self, other: Self) -> Self {
+        println!("hello from the otter side: {:?}", other);
+        self
+    }
+}
+impl Neg for Bar {
+    fn neg(self) -> Self {
+        self
+    }
+}
 ```
 
-allows calling `Foo(String::from("foo")) + Foo(String::from("bar"))` even though that is (at the time
-of writing this RFC) most definitely not const, because `String` only has an `impl Add for String`
-and not an `impl const Add for String`. Expressed in some sort of effect system syntax (neither
+allows calling `Foo(Bar) + Foo(Bar)` even though that is most definitely not const,
+because `Bar` only has an `impl Add for Bar`
+and not an `impl const Add for Bar`. Expressed in some sort of effect system syntax (neither
 effect syntax nor effect semantics are proposed by this RFC, the following is just for demonstration
 purposes):
 
@@ -159,25 +188,25 @@ impl<c: constness, T: const(c) Add> const(c) Add for Foo<T> {
 In this scheme on can see that if the `c` parameter is set to `const`, the `T` parameter requires a
 `const Add` bound, and creates a `const Add` impl for `Foo<T>` which then has a `const fn add`
 method. On the other hand, if `c` is `?const`, we get a regular impl without any constness anywhere.
-Of course for regular impls one can still pass a `T` which has a `const Add` impl, but that won't
+For regular impls one can still pass a `T` which has a `const Add` impl, but that won't
 cause any constness for `Foo<T>`.
 
 This goes in hand with the current scheme for const functions, which may also be called
 at runtime with runtime arguments, but are checked for soundness as if they were called in
 a const context. E.g. the following function may be called as
-`add(String::from("foo"), String::from("bar"))` at runtime.
+`add(Bar, Bar)` at runtime.
 
 ```rust
-const fn add<T: Add>(a: T, b: T) -> T {
-    a + b
+const fn add<T: Neg, U: Add<T>>(a: T, b: U) -> T {
+    -a + b
 }
 ```
 
 Using the same effect syntax from above:
 
 ```rust
-<c: constness> const(c) fn add<T: const(c) Add>(a: T, b: T) -> T {
-    a + b
+<c: constness> const(c) fn add<T: const(c) Neg, U: const(c) Add<T>>(a: T, b: U) -> T {
+    -a + b
 }
 ```
 
@@ -225,7 +254,7 @@ in an `impl`. This has several uses, most notably
 In order to keep both advantages in the presence of `impl const`s, we need a way to declare the
 method default body as being `const`. The exact syntax for doing so is left as an open question to
 be decided during the implementation and following final comment period. For now one can add the
-`#[default_method_body_is_const]` attribute to the method.
+placeholder `#[default_method_body_is_const]` attribute to the method.
 
 ```rust
 trait Foo {
@@ -286,7 +315,7 @@ but it covers the most common cases. See also the alternatives.
 ## Effect system
 
 A fully powered effect system can allow us to do fine grained constness propagation
-(or no propagation where undesirable). This is way out of scope in the near future
+(or no propagation where undesirable). This is out of scope in the near future
 and this RFC is forward compatible to have its background impl be an effect system.
 
 ## Fine grained `const` annotations
@@ -295,13 +324,13 @@ One could annotate methods instead of impls, allowing just marking some method i
 as const fn. This would require some sort of "const bounds" in generic functions that
 can be applied to specific methods. E.g. `where <T as Add>::add: const` or something of
 the sort. This design is more complex than the current one and we'd probably want the
-current one as sugar anyway
+current one as sugar anyway.
 
 ## Require `const` bounds everywhere
 
 One could require `const` on the bounds (e.g. `T: const Trait`) instead of assuming constness for all
 bounds. That design would not be forward compatible to allowing `const` trait bounds
-on non-const functions, e.g. in
+on non-const functions, e.g. in:
 
 ```rust
 fn foo<T: const Bar>() -> i32 {
@@ -318,7 +347,7 @@ annotate methods in trait impls, but we would not block calling a function on wh
 generic parameters fulfill some sort of constness rules. Instead we'd catch this during
 const evaluation.
 
-This is strictly the most powerful and generic variant, but is an enormous backwards compatibility
+This is strictly the least restrictive and generic variant, but is a semver
 hazard as changing a const fn's body to suddenly call a method that it did not before can break
 users of the function.
 
@@ -331,7 +360,8 @@ about. Notable mentions (see also the alternatives section):
 * const trait bounds on non-const functions allowing the use of the generic parameter in
   constant expressions in the body of the function or maybe even for array lenghts in the
   signature of the function
-* fine grained bounds for single methods and their bounds
+* fine grained bounds for single methods and their bounds (e.g. stating that a single method
+  is const)
 
 It might also be desirable to make the automatic `Fn*` impls on function types and pointers `const`.
 This change should probably go in hand with allowing `const fn` pointers on const functions
@@ -483,17 +513,18 @@ themselves known:
 
     is already legal in Rust today, even though the `F` doesn't need to be a `const` function.
 
-2. Opt out bounds are ugly
-
-    I don't think it's either intuitive nor readable to write the following
+2. Opt out bounds might seem unintuitive?
 
     ```rust
     const fn foo(f: ?const fn() -> i32) -> i32 {
         // not allowed to call `f` here, because we can't guarantee that it points to a `const fn`
     }
+    const fn foo(f: fn() -> i32) -> i32 {
+        f()
+    }
     ```
 
-Thus it seems useful to prefix function pointers to `const` functions with `const`:
+Alternatively one can prefix function pointers to `const` functions with `const`:
 
 ```rust
 const fn foo(f: const fn() -> i32) -> i32 {
@@ -530,8 +561,42 @@ fn foo<T: const Bar>() -> i32 {
 Which, once `const` items and array lengths inside of functions can make use of the generics of
 the function, would allow the above function to actually exist.
 
+## `dyn Trait`
+
+A natural extension to this RFC is to allow
+
+```rust
+const fn foo(bar: &dyn Trait) -> SomeType {
+    bar.some_method()
+}
+```
+
+with an opt out via `?const`
+
+```rust
+const fn foo(bar: &dyn ?const Trait) -> SomeType {
+    bar.some_method() // ERROR
+}
+```
+
 # Unresolved questions
 [unresolved-questions]: #unresolved-questions
 
 The syntax for specifying that a trait method's default body is `const` is left unspecified and uses
 the `#[default_method_body_is_const]` attribute as the placeholder syntax.
+
+## Implied bounds
+
+Assuming we have implied bounds on functions or impl blocks, will the following compile?
+
+```rust
+struct Foo<T: Add> {
+    t: T,
+    u: u32,
+}
+
+/// T has implied bound `Add`, but is that `const Add` or `?const Add` or `!const Add`?
+const fn foo<T>(foo: Foo<T>, bar: Foo<T>) -> T {
+    foo.t + bar.t
+}
+```
