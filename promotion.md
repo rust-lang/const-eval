@@ -51,6 +51,9 @@ earlier version of miri used to panic on arithmetic overflow even in release
 mode.  This breaks promotion, because now promoting code that would work (and
 could not panic!) at run-time leads to a compile-time CTFE error.
 
+*Dynamic check.* The Miri engine already dynamically detects panics, but the
+main point of promoteds is ruling them out statically.
+
 ### 2. Const safety
 
 We have explained what happens when evaluating a promoted panics, but what about
@@ -94,6 +97,9 @@ but to abort compilation of a program that would have compiled fine if we would
 not have decided to promote.  It is the responsibility of `foo` to not fail this
 way when working with const-safe arguments.
 
+*Dynamic check.* The Miri engine already dynamically detects const safety
+violations, but the main point of promoteds is ruling them out statically.
+
 ### 3. Drop
 
 Expressions returning "needs drop" types can never be promoted. If such an
@@ -109,6 +115,9 @@ While it is sound to `std::mem::forget` any value and thus not call its `Drop` i
 it is unlikely to be the desired behavior in most cases and very likey to be confusing
 to the user. If such behavior is desired, the user can still use an explicit `static`
 or `const` item and refer to that.
+
+*Dynamic check.* The Miri engine could dynamically check this by ensuring that
+ the result of computing a promoted is a value that does not need dropping.
 
 ## `&` in `const` and `static`
 

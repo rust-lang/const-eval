@@ -54,6 +54,11 @@ at type `&Option<Cell<i32>>` would be rejected by the naive analysis above, but
 is actually accepted by the compiler because we know that there is no
 `UnsafeCell` here that would permit interior mutability.
 
+*Dynamic check.* The Miri engine could check this dynamically by ensuring that
+the new data that is interned for a constant is all marked as
+immutable. (Constants referring to already existing mutable data are not
+inherently problematic.)
+
 ### 3. `Sync`
 
 Finally, the same constant reference is actually shared across threads.  This is
@@ -65,6 +70,8 @@ However, this does not currently happen, and there are several crates across the
 ecosystem that would break if we just started enforcing this now. See
 [this issue](https://github.com/rust-lang/rust/issues/49206) and the
 [PR attempting to fix this](https://github.com/rust-lang/rust/pull/54424/).
+
+*Dynamic check.* It is unclear how the Miri engine could dynamically check this.
 
 ### 4. Drop
 
@@ -97,3 +104,6 @@ This is distinct to the concern about interior mutability above: That concern
 was about first computing a `&Cell<i32>` and then using it at run-time (and
 observing the fact that it has been "deduplicated"), this here is about using
 such a value at compile-time even though it might be changed at run-time.
+
+*Dynamic check.* The Miri engine could check this dynamically by refusing to
+access mutable global memory when computing a const.

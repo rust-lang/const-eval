@@ -30,3 +30,6 @@ static FOOO: Foo = Foo; // Ok, drop is never run
 // Not ok, cannot run `Foo::drop` because it's not a const fn
 static BAR: i32 = (Foo, 42).1;
 ```
+
+*Dynamic check.* The Miri engine dynamically checks that this is done correctly
+by not permitting calls of non-`const` functions.
