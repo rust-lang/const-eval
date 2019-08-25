@@ -1,14 +1,20 @@
 # Const promotion
 
-"Promotion" is a mechanism that affects code like `&3`: Instead of putting it on
-the stack, the `3` is allocated in global static memory and a reference with
-lifetime `'static` is provided.  This is essentially an automatic transformation
-turning `&EXPR` into `{ const _PROMOTED = &EXPR; EXPR }`, but only if `EXPR`
-qualifies.
+["(Implicit) Promotion"][rfc] is a mechanism that affects code like `&3`:
+Instead of putting it on the stack, the `3` is allocated in global static memory
+and a reference with lifetime `'static` is provided.  This is essentially an
+automatic transformation turning `&EXPR` into `{ const _PROMOTED = &EXPR; EXPR
+}`, but only if `EXPR` qualifies.
 
 Note that promotion happens on the MIR, not on surface-level syntax.  This is
 relevant when discussing e.g. handling of panics caused by overflowing
 arithmetic.
+
+On top of what applies to [consts](const.md), promoteds suffer from the additional issue that *the user did not ask for them to be evaluated at compile-time*.
+Thus, if CTFE fails but the code would have worked fine at run-time, we broke the user's code for no good reason.
+That's why we have to be very conservative with what can and cannot be promoted.
+
+[rfc]: https://github.com/rust-lang/rfcs/blob/master/text/1414-rvalue_static_promotion.md
 
 ## Rules
 
@@ -17,9 +23,8 @@ arithmetic.
 Promotion is not allowed to throw away side effects.  This includes panicking.
 Let us look at what happens when we promote `&(0_usize - 1)` in a debug build:
 We have to avoid erroring at compile-time, because that would be promotion
-breaking compilation (the code would have compiled just fine if we hadn't
-promoted), but we must be sure to error correctly at run-time.  In the MIR, this
-looks roughly like
+breaking compilation, but we must be sure to error correctly at run-time.  In
+the MIR, this looks roughly like
 
 ```
 _tmp1 = CheckedSub (const 0usize) (const 1usize)
@@ -89,18 +94,12 @@ but to abort compilation of a program that would have compiled fine if we would
 not have decided to promote.  It is the responsibility of `foo` to not fail this
 way when working with const-safe arguments.
 
-### 3. Constraints on constants
+### 3. Drop
 
-All the [extra restrictions for constants](const.md) beyond const safety also
-apply to promoteds, for the same reason: Evaluating the expression at
-compile-time instead of run-time should not alter program behavior.
-
-### 4. Drop
-
-Expressions containing "needs drop" types
-can never be promoted. If such an expression were promoted, the `Drop` impl would
-never get called on the value, even though the user did not explicitly request such
-behavior by using an explicit `const` or `static` item.
+Expressions returning "needs drop" types can never be promoted. If such an
+expression were promoted, the `Drop` impl would never get called on the value,
+even though the user did not explicitly request such behavior by using an
+explicit `const` or `static` item.
 
 As expression promotion is essentially the silent insertion of a `static` item, and
 `static` items never have their `Drop` impl called, the `Drop` impl of the promoted
@@ -110,6 +109,38 @@ While it is sound to `std::mem::forget` any value and thus not call its `Drop` i
 it is unlikely to be the desired behavior in most cases and very likey to be confusing
 to the user. If such behavior is desired, the user can still use an explicit `static`
 or `const` item and refer to that.
+
+## `&` in `const` and `static`
+
+Promotion is also responsible for making code like this work:
+
+```rust
+const FOO: &'static i32 = {
+    let x = &13;
+    x
+};
+```
+
+However, since this is in explicit const context, we could be less strict about
+promotion in this situation.
+
+Promotion is *not* involved in something like this:
+
+```rust
+#![feature(const_vec_new)]
+const EMPTY_BYTES: &Vec<u8> = &Vec::new();
+
+const NESTED: &'static Vec<u8> = {
+    // This does not work when we have an inner scope:
+    let x = &Vec::new(); //~ ERROR: temporary value dropped while borrowed
+    x
+};
+```
+
+In `EMPTY_BYTES`, the reference obtains the lifetime of the "enclosing scope",
+similar to how `let x = &mut x;` creates a reference whose lifetime lasts for
+the enclosing scope. This is decided during MIR building already, and does not
+involve promotion.
 
 ## Open questions
 

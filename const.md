@@ -1,12 +1,14 @@
-# Further restrictions for constants
+# Constants
 
-The [const safety](const_safety.md) concerns apply to all computations happening
-at compile-time, `static` and `const` alike.  However, there are some additional
-considerations about `const` specifically.  These arise from the idea that
+"Constants" in this document refers to `const` bodies, array sizes, and non-`Copy` array initializers.
+On top of what applies to [statics](static.md), they are subject to an additional constraint: In code like
 ```rust
 const CONST: T = EXPR;
 ```
 is supposed to behave as-if `EXPR` was written at every use site of `CONST`.
+
+Based on this requirement, we allow other constants and [promoteds](promotion.md) to read from constants.
+This is why the value of a `const` is subject to validity checks.
 
 ## References
 
@@ -23,9 +25,9 @@ const REF: &u32 = { const _VAL = EXPR; static _STATIC = EXPR; &_STATIC };
 (`EXPR` is assigned to a `const` first to make it subject to the restrictions
 discussed in this document.)
 
-There are three reasons why this could be an issue.
+There are various reasons why this could be an issue.
 
-### Pointer equality
+### 1. Pointer equality
 
 We effectively "deduplicate" all the allocations that would otherwise locally be
 created at each use site of `REF`.  This is observable when the program compares
@@ -33,13 +35,18 @@ these pointers for equality.  We consider this okay, i.e., programs may not rely
 on such constants all getting distinct addresses.  They may not rely on them all
 getting the same address either.
 
-### Interior mutability
+### 2. Interior mutability
 
 If the reference has type `&Cell<i32>` it is quite clear that the program can
 easily observe whether two references point to the same memory even without
 comparing their address: Changes through one reference will affect reads through
 the other.  So, we cannot allow constant references to types that have interior
-mutability (types that are not `Freeze`).
+mutability (types that are not `Freeze`):
+
+```rust
+const BAD: &Cell<i32> = &Cell::new(42);
+// Inlining `BAD` everywhere clearly is not the same as them all pointing to the same thing.
+```
 
 However, we can do better than that: Even if a *type* is not `Freeze`, it can
 have *values* that do not exhibit any interior mutability.  For example, `&None`
@@ -47,7 +54,7 @@ at type `&Option<Cell<i32>>` would be rejected by the naive analysis above, but
 is actually accepted by the compiler because we know that there is no
 `UnsafeCell` here that would permit interior mutability.
 
-### `Sync`
+### 3. `Sync`
 
 Finally, the same constant reference is actually shared across threads.  This is
 very similar to multiple threads having a shared reference to the same `static`,
@@ -59,12 +66,9 @@ ecosystem that would break if we just started enforcing this now. See
 [this issue](https://github.com/rust-lang/rust/issues/49206) and the
 [PR attempting to fix this](https://github.com/rust-lang/rust/pull/54424/).
 
-### `Drop`
+### 4. Drop
 
-Values of "needs drop" types
-can only be used as the final initialization value of a `const` or `static` item.
-They may not be used as intermediate values that would be dropped before the item
-were initialized. As an example:
+`Drop` is actually not an issue, at least not more so than for statics:
 
 ```rust
 struct Foo;
@@ -76,18 +80,10 @@ impl Drop for Foo {
 }
 
 const FOO: Foo = Foo; // Ok, drop is run at each use site in runtime code
-static FOOO: Foo = Foo; // Ok, drop is never run
 
 // Not ok, cannot run `Foo::drop` because it's not a const fn
 const BAR: i32 = (Foo, 42).1;
 ```
-
-This restriction might be lifted in the future after trait impls
-may be declared `const` (https://github.com/rust-rfcs/const-eval/pull/8).
-
-Note that in promoteds this restriction can never be lifted, because
-otherwise we would silently stop calling the `Drop` impl at runtime and
-pull it to much earlier (compile-time).
 
 ## Reading statics
 
