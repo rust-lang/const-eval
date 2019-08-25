@@ -1,10 +1,10 @@
 # Const promotion
 
-["(Implicit) Promotion"][rfc] is a mechanism that affects code like `&3`:
+["(Implicit) Promotion"][promotion-rfc] is a mechanism that affects code like `&3`:
 Instead of putting it on the stack, the `3` is allocated in global static memory
 and a reference with lifetime `'static` is provided.  This is essentially an
-automatic transformation turning `&EXPR` into `{ const _PROMOTED = &EXPR; EXPR
-}`, but only if `EXPR` qualifies.
+automatic transformation turning `&EXPR` into
+`{ const _PROMOTED = &EXPR; EXPR}`, but only if `EXPR` qualifies.
 
 Note that promotion happens on the MIR, not on surface-level syntax.  This is
 relevant when discussing e.g. handling of panics caused by overflowing
@@ -12,9 +12,11 @@ arithmetic.
 
 On top of what applies to [consts](const.md), promoteds suffer from the additional issue that *the user did not ask for them to be evaluated at compile-time*.
 Thus, if CTFE fails but the code would have worked fine at run-time, we broke the user's code for no good reason.
+Even if we are sure we found an error in the user's code, we are only allowed to [emit a warning, not a hard error][warn-rfc].
 That's why we have to be very conservative with what can and cannot be promoted.
 
-[rfc]: https://github.com/rust-lang/rfcs/blob/master/text/1414-rvalue_static_promotion.md
+[promotion-rfc]: https://github.com/rust-lang/rfcs/blob/master/text/1414-rvalue_static_promotion.md
+[warn-rfc]: https://github.com/rust-lang/rfcs/blob/master/text/1229-compile-time-asserts.md
 
 ## Rules
 
