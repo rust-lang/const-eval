@@ -122,7 +122,7 @@ to the user. If such behavior is desired, the user can still use an explicit `st
 or `const` item and refer to that.
 
 *Dynamic check.* The Miri engine could dynamically check this by ensuring that
- the result of computing a promoted is a value that does not need dropping.
+the result of computing a promoted is a value that does not need dropping.
 
 ## `&` in `const` and `static`
 
@@ -135,8 +135,9 @@ const FOO: &'static i32 = {
 };
 ```
 
-However, since this is in explicit const context, we could be less strict about
-promotion in this situation.
+However, since this is in explicit const context, we are less strict about
+promotion in this situation: all function calls are promoted, not just
+`#[rustc_promotable]` functions.
 
 Promotion is *not* involved in something like this:
 
