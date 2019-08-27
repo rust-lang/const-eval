@@ -72,7 +72,7 @@ everything, so the only possible remaining failure are panics.
 
 However, things get more tricky when `const` and `const fn` are involved.
 
-For `const`, based on the const safety check described [here](const_safety.md),
+For `const`, based on the const safety check described [here](const_safety.md#const-safety-check-on-values),
 we can rely on there not being const-unsafe values in the `const`, so we should
 be able to promote freely.  For example:
 
@@ -98,6 +98,9 @@ another error (unsupported operation or undefined behavior), we have no choice
 but to abort compilation of a program that would have compiled fine if we would
 not have decided to promote.  It is the responsibility of `foo` to not fail this
 way when working with const-safe arguments.
+
+For this reason, only `const fn` that were explicitly marked with the
+`#[rustc_promotable]` attribute are subject to promotion.
 
 *Dynamic check.* The Miri engine already dynamically detects const safety
 violations, but the main point of promoteds is ruling them out statically.
