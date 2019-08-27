@@ -55,10 +55,11 @@ at type `&Option<Cell<i32>>` would be rejected by the naive analysis above, but
 is actually accepted by the compiler because we know that there is no
 `UnsafeCell` here that would permit interior mutability.
 
-*Dynamic check.* The Miri engine could check this dynamically by ensuring that
-the new data that is interned for a constant is all marked as
-immutable. (Constants referring to already existing mutable data are not
-inherently problematic.)
+*Dynamic check.* The Miri engine enforces this dynamically by ensuring that the
+new data that is interned for a constant is all marked as immutable. However,
+note the FIXME added [by this PR](https://github.com/rust-lang/rust/pull/63955):
+for untyped data in a constant, we currently just *make* it immutable, instead
+of checking properly.
 
 ### 3. `Sync`
 
