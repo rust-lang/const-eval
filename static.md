@@ -1,14 +1,15 @@
 # Statics
 
 Statics (`static`, `static mut`) are the simplest kind of compile-time evaluated data:
-The user explicitly requested them to be evaluated at compile-time,
-so evaluation errors from computing the initial value of a static are no concern.
-They observably get evaluated *once*, with the result being put at some address known at run-time,
-so there are no fundamental restrictions on what statics can do.
-The compiler checks that statics are `Sync`, justifying sharing their address across threads.
-[Constants](const.md) and [promoteds](promotion.md) are not allowed to read from statics,
-so their final value does not have have to be [const-valid](const_safety.md) in any meaningful way
-(but as of 2019-08, we do check them for validity anyway, to be conservative).
+* The user explicitly requested them to be evaluated at compile-time,
+  so evaluation errors from computing the initial value of a static are no concern
+  (in other words, [const safety](const_safety.md) is mostly not an issue).
+* They observably get evaluated *once*, with the result being put at some address known at run-time,
+  so there are no fundamental restrictions on what statics can do.
+* The compiler checks that statics are `Sync`, justifying sharing their address across threads.
+* [Constants](const.md) and [promoteds](promotion.md) are not allowed to read from statics,
+  so their final value does not have have to be [const-valid](const_safety.md#const-safety-check-on-values) in any meaningful way.
+  As of 2019-08, we do check them for validity anyway, to be conservative; and indeed constants could be allowed to read from frozen statics.
 
 ## `Drop`
 
