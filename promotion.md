@@ -142,7 +142,6 @@ promotion in this situation: all function calls are promoted, not just
 Promotion is *not* involved in something like this:
 
 ```rust
-#![feature(const_vec_new)]
 const EMPTY_BYTES: &Vec<u8> = &Vec::new();
 
 const NESTED: &'static Vec<u8> = {
