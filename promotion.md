@@ -20,7 +20,7 @@ That's why we have to be very conservative with what can and cannot be promoted.
 
 ## Rules
 
-### 1. Panics
+### Panics
 
 Promotion is not allowed to throw away side effects.  This includes panicking.
 Let us look at what happens when we promote `&(0_usize - 1)` in a debug build:
@@ -56,7 +56,7 @@ could not panic!) at run-time leads to a compile-time CTFE error.
 *Dynamic check.* The Miri engine already dynamically detects panics, but the
 main point of promoteds is ruling them out statically.
 
-### 2. Const safety
+### Const safety
 
 We have explained what happens when evaluating a promoted panics, but what about
 other kinds of failure -- what about hitting an unsupported operation or
@@ -105,7 +105,7 @@ For this reason, only `const fn` that were explicitly marked with the
 *Dynamic check.* The Miri engine already dynamically detects const safety
 violations, but the main point of promoteds is ruling them out statically.
 
-### 3. Drop
+### Drop
 
 Expressions returning "needs drop" types can never be promoted. If such an
 expression were promoted, the `Drop` impl would never get called on the value,
