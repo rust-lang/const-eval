@@ -79,9 +79,9 @@ Strictly speaking, lifetime extension in a const-context is not promotion; it
 does not create `promoted`s in the MIR.  However the same rules for
 promotability apply inside a const-context as outside.
 
-It's an open question whether lifetime extension within a `const` or `static`
-should be an implicit or explicit context. Currently it is treated as an
-implicit one.
+All contexts are treated as explicit ones when determining promotability within
+a `const` or `static` initializer because the user has requested that their
+code run at compile-time anyway.
 
 ## Promotability
 
