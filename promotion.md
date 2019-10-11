@@ -28,9 +28,10 @@ first context where promotion was done.
 
 ### Non-`Copy` array initialization
 
-Another promotion context was introduced in [RFC 2203][]. In this case, we try
-to promote the initializer in expressions like `[Vec::new(); 32]`, which allows
-non-`Copy` types to be used as array initializers.
+Another promotion context, the initializer of an array expression, was
+introduced in [RFC 2203][]. Here, promotion allows arrays of
+non-`Copy` types to be initialized idiomatically, for example
+`[Option::<Box<i32>>::None; 32]`.
 
 [RFC 2203]: https://github.com/rust-lang/rfcs/blob/master/text/2203-const-repeat-expr.md
 
@@ -71,18 +72,16 @@ implicit context are a superset of the ones in an explicit context.
 
 [warn-rfc]: https://github.com/rust-lang/rfcs/blob/master/text/1229-compile-time-asserts.md
 
-### Lifetime extension in `const` and `static`
+### Promotion contexts in `const` and `static`
 
 We defined above that promotion guarantees that code in a non-const context
-will be executed at compile-time. However, lifetime extension is useful
-*inside* `const`s and `static`s as well (unlike the other promotion contexts).
-Strictly speaking, lifetime extension in a const-context is not promotion; it
-does not create `promoted`s in the MIR.  However the same rules for
-promotability apply inside a const-context as outside.
-
-All contexts are treated as explicit ones when determining promotability within
-a `const` or `static` initializer because the user has requested that their
-code run at compile-time anyway.
+will be executed at compile-time. However, lifetime extension and non-`Copy`
+array initialziation are useful features *inside* `const`s and `static`s as
+well. Strictly speaking, the transformation used to enable these features
+inside a const-context is not promotion; no `promoted`s are created in the MIR.
+However the same rules for promotability are used with one modification:
+Because the user has already requested that this code run at compile time, all
+contexts are treated as explicit.
 
 ## Promotability
 
