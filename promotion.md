@@ -37,7 +37,7 @@ non-`Copy` types to be initialized idiomatically, for example
 
 ### `#[rustc_args_required_const(...)]`
 
-Additionally, some platform intrinsics require certain operations to be
+Additionally, some platform intrinsics require certain parameters to be
 immediates (known at compile-time). We use the `#[rustc_args_required_const]`
 attribute, introduced in
 [rust-lang/rust#48018](https://github.com/rust-lang/rust/pull/48018), to
@@ -76,7 +76,7 @@ implicit context are a superset of the ones in an explicit context.
 
 We defined above that promotion guarantees that code in a non-const context
 will be executed at compile-time. However, lifetime extension and non-`Copy`
-array initialziation are useful features *inside* `const`s and `static`s as
+array initialization are useful features *inside* `const`s and `static`s as
 well. Strictly speaking, the transformation used to enable these features
 inside a const-context is not promotion; no `promoted`s are created in the MIR.
 However the same rules for promotability are used with one modification:
