@@ -28,10 +28,11 @@ first context where promotion was done.
 
 ### Non-`Copy` array initialization
 
-Another promotion context was introduced in [RFC
-2203](https://github.com/rust-rfcs/const-eval/blob/master/const.md). In this
-case, we try to promote the initializer in expressions like `[Vec::new(); 32]`,
-which allows non-`Copy` types to be used as array initializers.
+Another promotion context was introduced in [RFC 2203][]. In this case, we try
+to promote the initializer in expressions like `[Vec::new(); 32]`, which allows
+non-`Copy` types to be used as array initializers.
+
+[RFC 2203]: https://github.com/rust-lang/rfcs/blob/master/text/2203-const-repeat-expr.md
 
 ### `#[rustc_args_required_const(...)]`
 
