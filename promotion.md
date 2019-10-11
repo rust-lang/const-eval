@@ -1,6 +1,16 @@
 # Const promotion
 
-["(Implicit) Promotion"][promotion-rfc] is a mechanism that affects code like `&3`:
+"Promotion" is the act of guaranteeing that code not written in a const context
+(e.g. initalizer of a `const` or `static`, or an array length expression) will
+be run at compile-time.
+
+## Promotion contexts
+
+There are a few different contexts where promotion is beneficial.
+
+### Lifetime extension
+
+"Lifetime extension" is a mechanism that affects code like `&3`:
 Instead of putting it on the stack, the `3` is allocated in global static memory
 and a reference with lifetime `'static` is provided.  This is essentially an
 automatic transformation turning `&EXPR` into
@@ -10,15 +20,111 @@ Note that promotion happens on the MIR, not on surface-level syntax.  This is
 relevant when discussing e.g. handling of panics caused by overflowing
 arithmetic.
 
+Lifetime extension is described in [RFC 1414][promotion-rfc]. The RFC uses the
+word "promotion" to refer exclusively to lifetime extension, since this was the
+first context where promotion was done.
+
+[promotion-rfc]: https://github.com/rust-lang/rfcs/blob/master/text/1414-rvalue_static_promotion.md
+
+### Non-`Copy` array initialization
+
+Another promotion context was introduced in [RFC
+2203](https://github.com/rust-rfcs/const-eval/blob/master/const.md). In this
+case, we try to promote the initializer in expressions like `[Vec::new(); 32]`,
+which allows non-`Copy` types to be used as array initializers.
+
+### `#[rustc_args_required_const(...)]`
+
+Additionally, some platform intrinsics require certain operations to be
+immediates (known at compile-time). We use the `#[rustc_args_required_const]`
+attribute, introduced in
+[rust-lang/rust#48018](https://github.com/rust-lang/rust/pull/48018), to
+specify these parameters and (aggressively, see below) try to promote the
+corresponding arguments.
+
+### Implicit and explicit contexts
+
 On top of what applies to [consts](const.md), promoteds suffer from the additional issue that *the user did not ask for them to be evaluated at compile-time*.
 Thus, if CTFE fails but the code would have worked fine at run-time, we broke the user's code for no good reason.
 Even if we are sure we found an error in the user's code, we are only allowed to [emit a warning, not a hard error][warn-rfc].
 That's why we have to be very conservative with what can and cannot be promoted.
 
-[promotion-rfc]: https://github.com/rust-lang/rfcs/blob/master/text/1414-rvalue_static_promotion.md
+For example, users might be surprised to learn that whenever they take a
+reference to a temporary, that temporary may be promoted away and never
+actually put on the stack. In this way, lifetime extension is an "implicit
+promotion context": the user did not ask for the value to be promoted.
+
+On the other hand, when a user passes an expression to a function with
+`#[rustc_args_required_const]`, they are explicitly asking for that expression
+to be evaluated at compile-time even though they have not written it in a
+`const` declaration. We call this an "explicit promotion context".
+
+Currently, non-`Copy` array initialization is treated as an implicit context.
+
+The distinction between these two determines whether calls to arbitrary `const
+fn`s (those without `#[rustc_promotable]`) are promotable (see below). See
+[rust-rfcs/const-eval#19](https://github.com/rust-rfcs/const-eval/issues/19)
+for a thorough discussion of this. At present, this is the only difference
+between implicit and explicit contexts. The requirements for promotion in an
+implicit context are a superset of the ones in an explicit context.
+
 [warn-rfc]: https://github.com/rust-lang/rfcs/blob/master/text/1229-compile-time-asserts.md
 
-## Rules
+### Lifetime extension in `const` and `static`
+
+We defined above that promotion guarantees that code in a non-const context
+will be executed at compile-time. However, lifetime extension is useful
+*inside* `const`s and `static`s as well (unlike the other promotion contexts).
+Strictly speaking, lifetime extension in a const-context is not promotion; it
+does not create `promoted`s in the MIR.  However the same rules for
+promotability apply inside a const-context as outside.
+
+It's an open question whether lifetime extension within a `const` or `static`
+should be an implicit or explicit context. Currently it is treated as an
+implicit one.
+
+## Promotability
+
+We have defined when it is desirable to promote expressions but have not yet
+defined which expressions can actually be promoted. We refer to such
+expressions as "promotable".
+
+### Named locals
+
+Promotable expressions cannot refer to named locals. This is not a technical
+limitation with the CTFE engine. While writing `let x = {expr}` outside of a
+const context, the user likely expects that `x` will live on the stack and be
+initialized at run-time.  Although this is not (to my knowledge) guaranteed by
+the language, we do not wish to violate the user's expectations here.
+
+### Single assignment
+
+We only promote temporaries that are assigned to exactly once. For example, the
+lifetime of the temporary whose reference is assigned to `x` below will not be
+extended.
+
+```rust
+let x: &'static i32 = &if cfg!(windows) { 0 } else { 1 };
+```
+
+Once again, this is not a fundamental limitation in the CTFE engine; we are
+perfectly capable of evaluating such expressions at compile time. However,
+determining the promotability of complex expressions would require more
+resources for little benefit.
+
+### Access to a `const` or `static`
+
+Accesses to `const`s are always promotable, regardless of the body of the
+`const`. For instance, while the previous example was not legal, the
+following would be:
+
+```rust
+const NOT_WINDOWS: i32 = if cfg!(windows) { 0 } else { 1 };
+let x: &'static i32 = &NOT_WINDOWS;
+```
+
+However, an access to a `static` is only promotable within the initializer of
+another `static`.
 
 ### Panics
 
