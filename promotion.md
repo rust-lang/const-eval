@@ -85,9 +85,10 @@ contexts are treated as explicit.
 
 ## Promotability
 
-We have defined when it is desirable to promote expressions but have not yet
-defined which expressions can actually be promoted. We refer to such
-expressions as "promotable".
+We have described the circumstances where promotion is desirable, but what
+expressions are actually eligible for promotion? We refer to eligible
+expressions as "promotable" and describe the restrictions on such expressions
+below.
 
 ### Named locals
 
