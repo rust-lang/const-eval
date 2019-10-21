@@ -72,16 +72,38 @@ implicit context are a superset of the ones in an explicit context.
 
 [warn-rfc]: https://github.com/rust-lang/rfcs/blob/master/text/1229-compile-time-asserts.md
 
-### Promotion contexts in `const` and `static`
+### Promotion contexts inside `const` and `static`
+
+Lifetime extension is also responsible for making code like this work:
+
+```rust
+const FOO: &'static i32 = {
+    let x = &13;
+    x
+};
+```
 
 We defined above that promotion guarantees that code in a non-const context
-will be executed at compile-time. However, lifetime extension and non-`Copy`
-array initialization are useful features *inside* `const`s and `static`s as
-well. Strictly speaking, the transformation used to enable these features
-inside a const-context is not promotion; no `promoted`s are created in the MIR.
-However the same rules for promotability are used with one modification:
-Because the user has already requested that this code run at compile time, all
-contexts are treated as explicit.
+will be executed at compile-time. The above example illustrates that lifetime
+extension and non-`Copy` array initialization are useful features *inside*
+`const`s and `static`s as well. Strictly speaking, the transformation used to
+enable these features inside a const-context is not promotion; no `promoted`s
+are created in the MIR.  However the same rules for promotability are used with
+one modification: Because the user has already requested that this code run at
+compile time, all contexts are treated as explicit.
+
+Notice that some code involving `&` *looks* like it relies on lifetime
+extension but actually does not:
+
+```rust
+const EMPTY_BYTES: &Vec<u8> = &Vec::new(); // Ok without lifetime extension
+```
+
+As we have seen above, `Vec::new()` does not get promoted. And yet this
+compiles. Why that? The reason is that the reference obtains the lifetime of
+the "enclosing scope", similar to how `let x = &mut x;` creates a reference
+whose lifetime lasts for the enclosing scope. This is decided during MIR
+building already, and does not involve lifetime extension.
 
 ## Promotability
 
@@ -236,52 +258,6 @@ or `const` item and refer to that.
 
 *Dynamic check.* The Miri engine could dynamically check this by ensuring that
 the result of computing a promoted is a value that does not need dropping.
-
-## `&` in `const` and `static`
-
-Promotion is also responsible for making code like this work:
-
-```rust
-const FOO: &'static i32 = {
-    let x = &13;
-    x
-};
-```
-
-However, since this is in explicit const context, we are less strict about
-promotion in this situation: all function calls are promoted, not just
-`#[rustc_promotable]` functions:
-
-```rust
-const fn bar() -> i32 { 42 }
-
-const FOO: &'static i32 = {
-    let x = &bar(); // this gets promoted
-    x
-};
-```
-
-However, we still do not promote *everything*; e.g., drop-checking still applies:
-
-```rust
-const DROP: &'static Vec<u8> = {
-    let x = &Vec::new(); //~ ERROR: temporary value dropped while borrowed
-    x
-};
-```
-
-Notice that some code involving `&` *looks* like it relies on promotion but
-actually does not:
-
-```rust
-const EMPTY_BYTES: &Vec<u8> = &Vec::new(); // Ok without promotion
-```
-
-As we have seen above, `Vec::new()` does not get promoted. And yet this
-compiles. Why that? The reason is that the reference obtains the lifetime of
-the "enclosing scope", similar to how `let x = &mut x;` creates a reference
-whose lifetime lasts for the enclosing scope. This is decided during MIR
-building already, and does not involve promotion.
 
 ## Open questions
 
