@@ -115,16 +115,22 @@ resources for little benefit.
 
 ### Access to a `const` or `static`
 
-Accesses to `const`s are always promotable, regardless of the body of the
-`const`. For instance, while the previous example was not legal, the
-following would be:
+When accessing a `const` in a promotable context, the restrictions on single
+assignment and named locals do not apply to the body of the `const`. All other
+restrictions, notably that the result of the `const` cannot be `Drop` or mutable
+through a reference still apply. For instance, while the previous example was
+not legal, the following would be:
 
 ```rust
-const NOT_WINDOWS: i32 = if cfg!(windows) { 0 } else { 1 };
-let x: &'static i32 = &NOT_WINDOWS;
+const BOOL: i32 = {
+  let ret = if cfg!(windows) { 0 } else { 1 };
+  ret
+};
+
+let x: &'static i32 = &BOOL;
 ```
 
-However, an access to a `static` is only promotable within the initializer of
+An access to a `static` is only promotable within the initializer of
 another `static`.
 
 ### Panics
