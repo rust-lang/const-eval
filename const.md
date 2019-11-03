@@ -6,6 +6,7 @@ On top of what applies to [statics](static.md), they are subject to an additiona
 const CONST: T = EXPR;
 ```
 is supposed to behave as-if `EXPR` was written at every use site of `CONST`.
+However, in current versions of rustc, `EXPR` is just computed once and the result is bit-wise copied each time `CONST` is used.
 To make this work, we need to ensure [const safety](const_safety.md).
 
 Based on this requirement, we allow other constants and [promoteds](promotion.md) to read from constants.
