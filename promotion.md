@@ -65,7 +65,7 @@ Currently, non-`Copy` array initialization is treated as an implicit context.
 
 The distinction between these two determines whether calls to arbitrary `const
 fn`s (those without `#[rustc_promotable]`) are promotable (see below). See
-[rust-rfcs/const-eval#19](https://github.com/rust-rfcs/const-eval/issues/19)
+[rust-lang/const-eval#19](https://github.com/rust-lang/const-eval/issues/19)
 for a thorough discussion of this. At present, this is the only difference
 between implicit and explicit contexts. The requirements for promotion in an
 implicit context are a superset of the ones in an explicit context.

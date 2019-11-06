@@ -298,7 +298,7 @@ type theoretical perspective started out with a much purer scheme, but, when exp
 constraints required, evolved to essentially the same scheme as this RFC. We thus feel confident
 that this RFC is the minimal viable scheme for having bounds on generic parameters of const
 functions. The discussion and evolution of the type theoretical scheme can be found
-[here](https://github.com/rust-rfcs/const-eval/pull/8#issuecomment-452396020) and is only 12 posts
+[here](https://github.com/rust-lang/const-eval/pull/8#issuecomment-452396020) and is only 12 posts
 and a linked three page document long. It is left as an exercise to the reader to read the
 discussion themselves.
 A summary of the result of the discussion can be found at the bottom of [this blog post](https://varkor.github.io/blog/2019/01/11/const-types-traits-and-implementations-in-Rust.html)
