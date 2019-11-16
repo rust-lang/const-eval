@@ -1,8 +1,8 @@
 # Const promotion
 
-"Promotion" is the act of guaranteeing that code not written in a const context
-(e.g. initalizer of a `const` or `static`, or an array length expression) will
-be run at compile-time.
+"Promotion" is the act of guaranteeing that code *not* written in an (explicit)
+const context will be run at compile-time. Explicit const contexts include the
+initializer of a `const` or `static`, or an array length expression.
 
 ## Promotion contexts
 
@@ -57,11 +57,14 @@ actually put on the stack. In this way, lifetime extension is an "implicit
 promotion context": the user did not ask for the value to be promoted.
 
 On the other hand, when a user passes an expression to a function with
-`#[rustc_args_required_const]`, they are explicitly asking for that expression
+`#[rustc_args_required_const]`, the only way for this code to compile is to promote it.
+In that sense, the user is explicitly asking for that expression
 to be evaluated at compile-time even though they have not written it in a
 `const` declaration. We call this an "explicit promotion context".
 
-Currently, non-`Copy` array initialization is treated as an implicit context.
+Currently, non-`Copy` array initialization is treated as an implicit context,
+because the code could compile even without promotion (namely, if the result
+type is `Copy`).
 
 The distinction between these two determines whether calls to arbitrary `const
 fn`s (those without `#[rustc_promotable]`) are promotable (see below). See
@@ -119,6 +122,10 @@ limitation with the CTFE engine. While writing `let x = {expr}` outside of a
 const context, the user likely expects that `x` will live on the stack and be
 initialized at run-time.  Although this is not (to my knowledge) guaranteed by
 the language, we do not wish to violate the user's expectations here.
+(Constant-folding still applies: the optimizer may compute `x` at compile-time
+and even inline it everywhere if it can show that this does not observably alter
+program behavior.  Promotion is very different from constant-folding as
+promotion can introduce observable differences in behavior.)
 
 ### Single assignment
 
@@ -137,11 +144,11 @@ resources for little benefit.
 
 ### Access to a `const` or `static`
 
-When accessing a `const` in a promotable context, the restrictions on single
-assignment and named locals do not apply to the body of the `const`. All other
-restrictions, notably that the result of the `const` cannot be `Drop` or mutable
-through a reference still apply. For instance, while the previous example was
-not legal, the following would be:
+When accessing a `const` in a promotable context, the initializer of that body
+is not subject to any restrictions.  However, the usual restrictions on the
+*result* of that computation still apply: it cannot be `Drop`.
+
+For instance, while the previous example was not legal, the following would be:
 
 ```rust
 const BOOL: i32 = {
@@ -152,8 +159,9 @@ const BOOL: i32 = {
 let x: &'static i32 = &BOOL;
 ```
 
-An access to a `static` is only promotable within the initializer of
-another `static`.
+An access to a `static` is only promotable within the initializer of another
+`static`. This is for the same reason that `const` initializers
+[cannot access statics](const.md#reading-statics).
 
 ### Panics
 
