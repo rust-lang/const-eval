@@ -146,7 +146,7 @@ resources for little benefit.
 
 When accessing a `const` in a promotable context, the initializer of that body
 is not subject to any restrictions.  However, the usual restrictions on the
-*result* of that computation still apply: it cannot be `Drop`.
+*result* of that computation still apply: it [cannot be `Drop`](#drop).
 
 For instance, while the previous example was not legal, the following would be:
 
