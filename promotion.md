@@ -122,10 +122,13 @@ limitation with the CTFE engine. While writing `let x = {expr}` outside of a
 const context, the user likely expects that `x` will live on the stack and be
 initialized at run-time.  Although this is not (to my knowledge) guaranteed by
 the language, we do not wish to violate the user's expectations here.
-(Constant-folding still applies: the optimizer may compute `x` at compile-time
-and even inline it everywhere if it can show that this does not observably alter
-program behavior.  Promotion is very different from constant-folding as
-promotion can introduce observable differences in behavior.)
+
+However, constant-folding still applies: the optimizer may compute `x` at
+compile-time and even inline it everywhere if it can show that this does not
+observably alter program behavior.  Promotion is very different from
+constant-folding as promotion can introduce observable differences in behavior
+(if const-evaluation fails) and as it is *guaranteed* to happen in some cases
+(and thus exploited by the borrow checker).
 
 ### Single assignment
 
