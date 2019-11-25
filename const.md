@@ -62,6 +62,11 @@ note the FIXME added [by this PR](https://github.com/rust-lang/rust/pull/63955):
 for untyped data in a constant, we currently just *make* it immutable, instead
 of checking properly.
 
+Note that a constant *referring to* some already existing mutable memory is
+fine: inlining that reference everywhere has the same behavior as computing a
+new reference each time.  In both cases, there exists exactly one instance of
+the mutable memory that everything references.
+
 ### 3. `Sync`
 
 Finally, the same constant reference is actually shared across threads.  This is
