@@ -247,6 +247,21 @@ An access to a `static` is only promotable within the initializer of another
 `static`. This is for the same reason that `const` initializers
 [cannot access statics](const.md#reading-statics).
 
+Crucially, however, the following is *not* legal:
+
+```rust
+const X: Cell<i32> = Cell::new(5); // ok
+const XREF: &Cell<i32> = &X; // not ok
+fn main() {
+    let x: &'static _ = &X; // not ok
+}
+```
+
+Just like allowing `XREF` would be a problem because, by the inlining semantics,
+every user of `XREF` should get their own `Cell`; it would also be a problem to
+promote here because if that code getes executed multiple times (e.g. inside a
+loop), it should get a new `Cell` each time.
+
 ### Named locals
 
 Promotable expressions cannot refer to named locals. This is not a technical
