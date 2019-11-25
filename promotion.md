@@ -232,15 +232,17 @@ restrictions described above still apply for the *result* of the promoted
 computation: in particular, it must be a valid `const` (i.e., it cannot
 introduce interior mutability) and it must not require dropping.
 
-For instance, while the previous example was not legal, the following would be:
+For instance the following would be legal even though calls to `do_it` are not
+eligible for implicit promotion:
 
 ```rust
-const BOOL: i32 = {
-  let ret = if cfg!(windows) { 0 } else { 1 };
+const fn do_it(x: i32) -> i32 { 2*x }
+const ANSWER: i32 = {
+  let ret = do_it(21);
   ret
 };
 
-let x: &'static i32 = &BOOL;
+let x: &'static i32 = &ANSWER;
 ```
 
 An access to a `static` is only promotable within the initializer of another
