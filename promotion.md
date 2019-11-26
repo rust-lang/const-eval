@@ -261,7 +261,7 @@ fn main() {
 
 Just like allowing `XREF` would be a problem because, by the inlining semantics,
 every user of `XREF` should get their own `Cell`; it would also be a problem to
-promote here because if that code getes executed multiple times (e.g. inside a
+promote here because if that code gets executed multiple times (e.g. inside a
 loop), it should get a new `Cell` each time.
 
 ### Named locals
