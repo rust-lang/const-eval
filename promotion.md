@@ -226,8 +226,8 @@ the result of computing a promoted is a value that does not need dropping.
 
 ### Access to a `const` or `static`
 
-When accessing a `const` in a promotable context, its value anyway gets computed
-at compile-time, so we do not have to check the initializer.  However, the
+When accessing a `const` in a promotable context, its value gets computed
+at compile-time anyway, so we do not have to check the initializer.  However, the
 restrictions described above still apply for the *result* of the promoted
 computation: in particular, it must be a valid `const` (i.e., it cannot
 introduce interior mutability) and it must not require dropping.
@@ -272,12 +272,13 @@ const context, the user likely expects that `x` will live on the stack and be
 initialized at run-time.  Although this is not (to my knowledge) guaranteed by
 the language, we do not wish to violate the user's expectations here.
 
-However, constant-folding still applies: the optimizer may compute `x` at
+Note that constant-folding still applies: the optimizer may compute `x` at
 compile-time and even inline it everywhere if it can show that this does not
 observably alter program behavior.  Promotion is very different from
 constant-folding as promotion can introduce observable differences in behavior
 (if const-evaluation fails) and as it is *guaranteed* to happen in some cases
-(and thus exploited by the borrow checker).
+(and thus exploited by the borrow checker).  This is reflected in the fact that
+promotion affects lifetimes, but constant folding does not.
 
 ### Single assignment
 
