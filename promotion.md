@@ -1,8 +1,8 @@
 # Const promotion
 
-"Promotion" is the act of guaranteeing that code not written in a const context
-(e.g. initalizer of a `const` or `static`, or an array length expression) will
-be run at compile-time.
+"Promotion" is the act of guaranteeing that code *not* written in an (explicit)
+const context will be run at compile-time. Explicit const contexts include the
+initializer of a `const` or `static`, or an array length expression.
 
 ## Promotion contexts
 
@@ -57,11 +57,14 @@ actually put on the stack. In this way, lifetime extension is an "implicit
 promotion context": the user did not ask for the value to be promoted.
 
 On the other hand, when a user passes an expression to a function with
-`#[rustc_args_required_const]`, they are explicitly asking for that expression
+`#[rustc_args_required_const]`, the only way for this code to compile is to promote it.
+In that sense, the user is explicitly asking for that expression
 to be evaluated at compile-time even though they have not written it in a
 `const` declaration. We call this an "explicit promotion context".
 
-Currently, non-`Copy` array initialization is treated as an implicit context.
+Currently, non-`Copy` array initialization is treated as an implicit context,
+because the code could compile even without promotion (namely, if the result
+type is `Copy`).
 
 The distinction between these two determines whether calls to arbitrary `const
 fn`s (those without `#[rustc_promotable]`) are promotable (see below). See
@@ -112,48 +115,10 @@ expressions are actually eligible for promotion? We refer to eligible
 expressions as "promotable" and describe the restrictions on such expressions
 below.
 
-### Named locals
-
-Promotable expressions cannot refer to named locals. This is not a technical
-limitation with the CTFE engine. While writing `let x = {expr}` outside of a
-const context, the user likely expects that `x` will live on the stack and be
-initialized at run-time.  Although this is not (to my knowledge) guaranteed by
-the language, we do not wish to violate the user's expectations here.
-
-### Single assignment
-
-We only promote temporaries that are assigned to exactly once. For example, the
-lifetime of the temporary whose reference is assigned to `x` below will not be
-extended.
-
-```rust
-let x: &'static i32 = &if cfg!(windows) { 0 } else { 1 };
-```
-
-Once again, this is not a fundamental limitation in the CTFE engine; we are
-perfectly capable of evaluating such expressions at compile time. However,
-determining the promotability of complex expressions would require more
-resources for little benefit.
-
-### Access to a `const` or `static`
-
-When accessing a `const` in a promotable context, the restrictions on single
-assignment and named locals do not apply to the body of the `const`. All other
-restrictions, notably that the result of the `const` cannot be `Drop` or mutable
-through a reference still apply. For instance, while the previous example was
-not legal, the following would be:
-
-```rust
-const BOOL: i32 = {
-  let ret = if cfg!(windows) { 0 } else { 1 };
-  ret
-};
-
-let x: &'static i32 = &BOOL;
-```
-
-An access to a `static` is only promotable within the initializer of
-another `static`.
+First of all, expressions have to be [allowed in constants](const.md). The
+restrictions described there are needed because we want `const` to behave the
+same as copying the `const` initializer everywhere the constant is used; we need
+the same property when promoting expressions. But we need more.
 
 ### Panics
 
@@ -258,6 +223,77 @@ or `const` item and refer to that.
 
 *Dynamic check.* The Miri engine could dynamically check this by ensuring that
 the result of computing a promoted is a value that does not need dropping.
+
+### Access to a `const` or `static`
+
+When accessing a `const` in a promotable context, its value gets computed
+at compile-time anyway, so we do not have to check the initializer.  However, the
+restrictions described above still apply for the *result* of the promoted
+computation: in particular, it must be a valid `const` (i.e., it cannot
+introduce interior mutability) and it must not require dropping.
+
+For instance the following would be legal even though calls to `do_it` are not
+eligible for implicit promotion:
+
+```rust
+const fn do_it(x: i32) -> i32 { 2*x }
+const ANSWER: i32 = {
+  let ret = do_it(21);
+  ret
+};
+
+let x: &'static i32 = &ANSWER;
+```
+
+An access to a `static` is only promotable within the initializer of another
+`static`. This is for the same reason that `const` initializers
+[cannot access statics](const.md#reading-statics).
+
+Crucially, however, the following is *not* legal:
+
+```rust
+const X: Cell<i32> = Cell::new(5); // ok
+const XREF: &Cell<i32> = &X; // not ok
+fn main() {
+    let x: &'static _ = &X; // not ok
+}
+```
+
+Just like allowing `XREF` would be a problem because, by the inlining semantics,
+every user of `XREF` should get their own `Cell`; it would also be a problem to
+promote here because if that code gets executed multiple times (e.g. inside a
+loop), it should get a new `Cell` each time.
+
+### Named locals
+
+Promotable expressions cannot refer to named locals. This is not a technical
+limitation with the CTFE engine. While writing `let x = {expr}` outside of a
+const context, the user likely expects that `x` will live on the stack and be
+initialized at run-time.  Although this is not (to my knowledge) guaranteed by
+the language, we do not wish to violate the user's expectations here.
+
+Note that constant-folding still applies: the optimizer may compute `x` at
+compile-time and even inline it everywhere if it can show that this does not
+observably alter program behavior.  Promotion is very different from
+constant-folding as promotion can introduce observable differences in behavior
+(if const-evaluation fails) and as it is *guaranteed* to happen in some cases
+(and thus exploited by the borrow checker).  This is reflected in the fact that
+promotion affects lifetimes, but constant folding does not.
+
+### Single assignment
+
+We only promote temporaries that are assigned to exactly once. For example, the
+lifetime of the temporary whose reference is assigned to `x` below will not be
+extended.
+
+```rust
+let x: &'static i32 = &if cfg!(windows) { 0 } else { 1 };
+```
+
+Once again, this is not a fundamental limitation in the CTFE engine; we are
+perfectly capable of evaluating such expressions at compile time. However,
+determining the promotability of complex expressions would require more
+resources for little benefit.
 
 ## Open questions
 
