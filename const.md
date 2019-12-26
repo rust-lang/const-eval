@@ -80,12 +80,14 @@ ecosystem that would break if we just started enforcing this now. See
 [this issue](https://github.com/rust-lang/rust/issues/49206) and the
 [PR attempting to fix this](https://github.com/rust-lang/rust/pull/54424/).
 
-Also, one could make the argument that the value does not have to be `Send`
-because it is not actually sent to other threads; instead, conceptually, each
-thread re-does the same computation.  But we know they will all come to the same
+One could make the argument that the value does not have to be `Send` because it
+is not actually sent to other threads; instead, conceptually, each thread
+re-does the same computation.  But we know they will all come to the same
 result.  This works, except when we consider address identity: with references
 in the `const`, all threads will get the same address, unlike in case of a
-per-thread recomputation which would lead to different addresses.
+per-thread recomputation which would lead to different addresses. As a
+consequence, non-`Send` `const` without references are fine, but once references
+and thus address identity comes into play, we have a problem.
 
 *Dynamic check.* It is unclear how the Miri engine could dynamically check this.
 
