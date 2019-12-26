@@ -120,6 +120,13 @@ restrictions described there are needed because we want `const` to behave the
 same as copying the `const` initializer everywhere the constant is used; we need
 the same property when promoting expressions. But we need more.
 
+Note that there is no point in doing dynamic checks here.  The entire point of
+the promotion restrictions is to avoid failing compilation for code that would
+have been fine without promotion.  The best a dynamic check could do is tell us
+after the fact that we should not have promoted something, but then it is
+already too late -- and the dynamic checks for that are exactly the ones we are
+already doing for constants and statics.
+
 ### Panics
 
 Promotion is not allowed to throw away side effects.  This includes panicking.
@@ -152,9 +159,6 @@ CTFE correctly implementing both normal program behavior and panics*.  An
 earlier version of miri used to panic on arithmetic overflow even in release
 mode.  This breaks promotion, because now promoting code that would work (and
 could not panic!) at run-time leads to a compile-time CTFE error.
-
-*Dynamic check.* The Miri engine already dynamically detects panics, but the
-main point of promoteds is ruling them out statically.
 
 ### Const safety
 
@@ -201,9 +205,6 @@ way when working with const-safe arguments.
 
 For this reason, only `const fn` that were explicitly marked with the
 `#[rustc_promotable]` attribute are subject to promotion.
-
-*Dynamic check.* The Miri engine already dynamically detects const safety
-violations, but the main point of promoteds is ruling them out statically.
 
 ### Drop
 
