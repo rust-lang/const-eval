@@ -67,17 +67,25 @@ fine: inlining that reference everywhere has the same behavior as computing a
 new reference each time.  In both cases, there exists exactly one instance of
 the mutable memory that everything references.
 
-### 3. `Sync`
+### 3. `Send`
 
-Finally, the same constant reference is actually shared across threads.  This is
-very similar to multiple threads having a shared reference to the same `static`,
-which is why `static` must be `Sync`.  So it seems like we should reject
-non-`Sync` types, conforming with the desugaring described above.
+Finally, the same constant value is actually shared across threads.  This is
+very similar to sending the same value across threads, so it seems like we
+should reject non-`Send` types.  For shared references, this means the pointee
+type ought to be `Sync`.  That is already required for `static` items, so this
+is consistent with the desugaring described above.
 
 However, this does not currently happen, and there are several crates across the
 ecosystem that would break if we just started enforcing this now. See
 [this issue](https://github.com/rust-lang/rust/issues/49206) and the
 [PR attempting to fix this](https://github.com/rust-lang/rust/pull/54424/).
+
+Also, one could make the argument that the value does not have to be `Send`
+because it is not actually sent to other threads; instead, conceptually, each
+thread re-does the same computation.  But we know they will all come to the same
+result.  This works, except when we consider address identity: with references
+in the `const`, all threads will get the same address, unlike in case of a
+per-thread recomputation which would lead to different addresses.
 
 *Dynamic check.* It is unclear how the Miri engine could dynamically check this.
 
