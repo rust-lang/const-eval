@@ -57,10 +57,7 @@ is actually accepted by the compiler because we know that there is no
 `UnsafeCell` here that would permit interior mutability.
 
 *Dynamic check.* The Miri engine enforces this dynamically by ensuring that the
-new data that is interned for a constant is all marked as immutable. However,
-note the FIXME added [by this PR](https://github.com/rust-lang/rust/pull/63955):
-for untyped data in a constant, we currently just *make* it immutable, instead
-of checking properly.
+new data that is interned for a constant is all marked as immutable.
 
 Note that a constant *referring to* some already existing mutable memory is
 fine: inlining that reference everywhere has the same behavior as computing a
@@ -113,5 +110,5 @@ was about first computing a `&Cell<i32>` and then using it at run-time (and
 observing the fact that it has been "deduplicated"), this here is about using
 such a value at compile-time even though it might be changed at run-time.
 
-*Dynamic check.* The Miri engine could check this dynamically by refusing to
-access mutable global memory when computing a const.
+*Dynamic check.* The Miri engine checks this dynamically by refusing to access
+global memory when computing a const.
