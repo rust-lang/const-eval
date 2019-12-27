@@ -120,7 +120,7 @@ restrictions described there are needed because we want `const` to behave the
 same as copying the `const` initializer everywhere the constant is used; we need
 the same property when promoting expressions. But we need more.
 
-Note that there is no point in doing dynamic checks here.  The entire point of
+Note that there is no point in doing additional dynamic checks here.  The entire point of
 the promotion restrictions is to avoid failing compilation for code that would
 have been fine without promotion.  The best a dynamic check could do is tell us
 after the fact that we should not have promoted something, but then it is
