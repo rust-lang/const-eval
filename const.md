@@ -58,6 +58,11 @@ is actually accepted by the compiler because we know that there is no
 
 *Dynamic check.* The Miri engine enforces this dynamically by ensuring that the
 new data that is interned for a constant is all marked as immutable.
+(Except for
+[data inside promoteds](https://github.com/rust-lang/rust/blob/d538b80ad77949e46989cd355cdec193b574f052/src/librustc_mir/interpret/intern.rs#L363-L367)
+which cannot easily be checked, and is thus just *marked* as immutable because
+it descends from a shared reference subject to the strict syntactic checks of
+lifetime extension.)
 
 Note that a constant *referring to* some already existing mutable memory is
 fine: inlining that reference everywhere has the same behavior as computing a
