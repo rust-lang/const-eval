@@ -14,8 +14,8 @@ enum Foo {
 type NineStrings = [&str, 3 * 3];
 ```
 
-The Rust compiler runs the [MIR](https://rust-lang.github.io/rustc-guide/mir/index.html)
-in the [`MIR` interpreter (miri)](https://rust-lang.github.io/rustc-guide/const-eval),
+The Rust compiler runs the [MIR](https://rust-lang.github.io/rustc-dev-guide/mir/index.html)
+in the [`MIR` interpreter (miri)](https://rust-lang.github.io/rustc-dev-guide/const-eval),
 which sort of is a virtual machine using `MIR` as "bytecode".
 
 ## Table of Contents
