@@ -14,7 +14,8 @@ Statics (`static`, `static mut`) are the simplest kind of compile-time evaluated
 ## `Drop`
 
 The compiler rejects intermediate values (created and discarded during the computation of a static initializer) that implement `Drop`.
-The reason for this is simply that the `Drop` implementation might be non-`const fn`.
+The reason for this is simply that the `Drop` implementation might be non-`const fn`
+(so really, this is just a special case of static initializers not being able to call non-`const` functions).
 This restriction can be lifted once `const impl Drop for Type` (or something similar) is supported.
 
 ```rust
