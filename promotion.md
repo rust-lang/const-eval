@@ -66,12 +66,15 @@ Currently, non-`Copy` array initialization is treated as an implicit context,
 because the code could compile even without promotion (namely, if the result
 type is `Copy`).
 
-The distinction between these two determines whether calls to arbitrary `const
-fn`s (those without `#[rustc_promotable]`) are promotable (see below). See
-[rust-lang/const-eval#19](https://github.com/rust-lang/const-eval/issues/19)
-for a thorough discussion of this. At present, this is the only difference
-between implicit and explicit contexts. The requirements for promotion in an
-implicit context are a superset of the ones in an explicit context.
+CTFE of implicitly promoted code must never fail to evaluate except of the
+run-time code also would have failed. This means we cannot permit calling
+arbitrary `const fn`, as we cannot predict if they are going to perform an
+["unconst" operation](const_safety.md). Thus, only functions marked
+`#[rustc_promotable]` are implicitly promotable (see below). See
+[rust-lang/const-eval#19](https://github.com/rust-lang/const-eval/issues/19) for
+a thorough discussion of this. At present, this is the only difference between
+implicit and explicit contexts. The requirements for promotion in an implicit
+context are a superset of the ones in an explicit context.
 
 [warn-rfc]: https://github.com/rust-lang/rfcs/blob/master/text/1229-compile-time-asserts.md
 
@@ -204,7 +207,8 @@ not have decided to promote.  It is the responsibility of `foo` to not fail this
 way when working with const-safe arguments.
 
 For this reason, only `const fn` that were explicitly marked with the
-`#[rustc_promotable]` attribute are subject to promotion.
+`#[rustc_promotable]` attribute are subject to promotion. Those functions must
+be manually reviewed to never raise CTFE errors.
 
 ### Drop
 
