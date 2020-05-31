@@ -21,6 +21,7 @@ which sort of is a virtual machine using `MIR` as "bytecode".
 ## Table of Contents
 
 * [Const Safety](const_safety.md)
+* [Static and dynamic checks](const_checks.md)
 * The three "kinds" of compile-time evaluated data:
   * [Statics](static.md) (`static`, `static mut`)
   * [Constants](const.md) (`const`, array sizes, non-`Copy` array initializers)
