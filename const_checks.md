@@ -9,7 +9,10 @@ Dynamic checks are conceptually very simple: when evaluating the compile-time co
 Thus, a dynamic check generally makes it very clear what is being protected against.
 
 The main disadvantage of dynamic checks is that they can only run when the compile-time code is being evaluated, which is after monomorphization.
-We generally try to avoid post-monomorphization errors as they make for a bad user experience.
+We generally try to avoid post-monomorphization errors as they inherently make for a bad user experience.
+While there are technical aspects that could be improved here, the main problem is that the site where the error is reported is disconnected from the site where the root cause is.
+Such problems can be observed when creating an associated constant that uses associated constants from generic parameters.
+These generic parameters are unknown, so the usage of these associated constants may cause errors depending on the *value* of the generic parameter's associated constants.
 
 [Promotion analysis](promotion.md) also makes little sense dynamically as it is about code transformation.
 All we can do is check after the transformation if the generated code makes sense.
