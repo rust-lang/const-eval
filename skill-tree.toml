@@ -18,7 +18,7 @@ href = "https://github.com/rust-lang/const-eval/issues/25"
 items = []
 
 [[group]]
-name = "const_heap"
+name = "heap"
 label = "heap allocations in constants"
 requires = ["transient_heap"]
 href = "https://github.com/rust-lang/const-eval/issues/20"
@@ -44,6 +44,12 @@ requires = ["loop", "if_match"]
 items = []
 
 [[group]]
+name = "iterators"
+label = "iterators and iterator combinators"
+requires = ["mut_ref", "if_match", "trait_impl"]
+items = []
+
+[[group]]
 name = "for"
 label = "for loops"
 requires = ["while_let", "trait_impl", "mut_ref"]
@@ -64,7 +70,7 @@ items = []
 [[group]]
 name = "box_new"
 label = "Box::new"
-requires = ["const_heap", "trait_bound_opt_out"]
+requires = ["heap", "trait_bound_opt_out"]
 items = []
 
 [[group]]
@@ -107,6 +113,7 @@ name = "mutex_new"
 label = "Mutex::new"
 href = "https://github.com/rust-lang/rust/issues/66806"
 items = []
+requires = ["heap"]
 
 [[group]]
 name = "const_fn_in_patterns"
@@ -135,18 +142,14 @@ items = [
 [[group]]
 name = "const-assert"
 label = "assert! invocations in consts"
-items = [
-    { label = "panic" },
-    { label = "if_match" },
-]
+requires = ["panic", "if_match"]
+items = []
 
 [[group]]
 name = "const-assert-eq"
 label = "assert_eq! invocations in consts"
-items = [
-    { label = "const-assert" },
-    { label = "const_trait_impl" },
-]
+requires = ["const-assert", "trait_impl"]
+items = []
 
 [[group]]
 name = "rfc"
@@ -171,6 +174,7 @@ label = "feature gate\nconst_compare_raw_pointers"
 name = "compare_raw_pointers"
 href = "https://github.com/rust-lang/rust/issues/53020"
 items = []
+requires = ["unconst_rules"]
 
 [[group]]
 label = "feature gate\nconst_trait_bound_opt_out"
@@ -228,3 +232,4 @@ label = "const function pointers"
 name = "const_fn_ptr"
 href = "https://github.com/rust-lang/rust/issues/63997"
 items = []
+requires = ["trait_impl", "trait_bound_opt_out"]
