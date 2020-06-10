@@ -1,39 +1,39 @@
 [[group]]
 name = "mut_ref"
-label = "mutable references in constants and as arguments/return type of `const fn`"
+label = "mutable references"
 href = "https://github.com/rust-lang/rust/issues/57349"
 items = []
 
 [[group]]
 name = "const_mut_ref"
-label = "constants with mutable references in their final value"
+label = "constants with mutable\nreferences in their final value"
 href = "https://github.com/rust-lang/rust/issues/71212"
 requires = ["mut_ref"]
 items = []
 
 [[group]]
 name = "file_output"
-label = "write to files from constants"
+label = "write to files\nfrom constants"
 href = "https://github.com/rust-lang/const-eval/issues/25"
 items = []
 
 [[group]]
 name = "heap"
-label = "heap allocations in constants"
+label = "heap allocations\nin the final value of constants"
 requires = ["transient_heap"]
 href = "https://github.com/rust-lang/const-eval/issues/20"
 items = []
 
 [[group]]
 name = "transient_heap"
-label = "heap allocations during the computation of a constant"
+label = "heap allocations"
 requires = []
 items = []
 href = "https://github.com/rust-lang/const-eval/issues/20"
 
 [[group]]
 name = "recursive_loop"
-label = "emulate loops via recursive functions"
+label = "emulate loops via\nrecursive functions"
 requires = ["if_match"]
 items = []
 
@@ -45,7 +45,7 @@ items = []
 
 [[group]]
 name = "iterators"
-label = "iterators and iterator combinators"
+label = "iterators"
 requires = ["mut_ref", "if_match", "trait_impl"]
 items = []
 
@@ -70,7 +70,7 @@ items = []
 [[group]]
 name = "box_new"
 label = "Box::new"
-requires = ["heap", "trait_bound_opt_out"]
+requires = ["heap", "trait_bound_opt_out", "drop"]
 items = []
 
 [[group]]
@@ -130,13 +130,19 @@ requires = ["trait_impl"]
 items = []
 
 [[group]]
+name = "int_parse"
+label = "<int>::from_str"
+requires = ["from_str", "loop", "iterators"]
+items = []
+
+[[group]]
 name = "const-float"
 label = "floats in const fn"
 href = "https://github.com/rust-lang/rust/issues/57241"
 items = [
     { label = "from_bits" },
     { label = "to_bits" },
-    { label = "general usage of float math, arguments and return types" },
+    { label = "general usage of float math,\narguments and return types" },
 ]
 
 [[group]]
@@ -233,3 +239,32 @@ name = "const_fn_ptr"
 href = "https://github.com/rust-lang/rust/issues/63997"
 items = []
 requires = ["trait_impl", "trait_bound_opt_out"]
+
+[[group]]
+label = "format!"
+name = "format"
+items = []
+requires = ["string", "format_args"]
+[[group]]
+label = "format_args!"
+name = "format_args"
+items = []
+requires = ["trait_impl", "if_match", "loop"]
+
+[[group]]
+label = "String operations"
+name = "string"
+items = []
+requires = ["vec"]
+
+[[group]]
+label = "Vec operations"
+name = "vec"
+items = []
+requires = ["mut_ref", "heap", "if_match", "loop", "trait_impl", "drop", "raw_ptr_deref"]
+
+[[group]]
+label = "Drop"
+name = "drop"
+items = []
+requires = ["mut_ref", "trait_impl"]
