@@ -136,13 +136,13 @@ items = [
 
 [[group]]
 name = "const-assert"
-label = "assert! invocations in consts"
+label = "assert!"
 requires = ["panic", "if_match"]
 items = []
 
 [[group]]
 name = "const-assert-eq"
-label = "assert_eq! invocations in consts"
+label = "assert_eq!"
 requires = ["const-assert", "trait_impl", "format_args"]
 items = []
 
