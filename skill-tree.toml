@@ -113,7 +113,7 @@ name = "mutex_new"
 label = "Mutex::new"
 href = "https://github.com/rust-lang/rust/issues/66806"
 items = []
-requires = ["heap"]
+requires = ["heap", "parking_lot", "unconst_rules"]
 
 [[group]]
 name = "const_fn_in_patterns"
@@ -154,7 +154,7 @@ items = []
 [[group]]
 name = "const-assert-eq"
 label = "assert_eq! invocations in consts"
-requires = ["const-assert", "trait_impl"]
+requires = ["const-assert", "trait_impl", "format_args"]
 items = []
 
 [[group]]
@@ -245,11 +245,12 @@ label = "format!"
 name = "format"
 items = []
 requires = ["string", "format_args"]
+
 [[group]]
 label = "format_args!"
 name = "format_args"
 items = []
-requires = ["trait_impl", "if_match", "loop"]
+requires = ["trait_impl", "if_match", "loop", "compare_raw_pointers"]
 
 [[group]]
 label = "String operations"
