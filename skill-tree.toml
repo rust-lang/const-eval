@@ -171,9 +171,8 @@ href = "https://github.com/rust-lang/rust/pull/69825"
 items = []
 
 [[group]]
-label = "feature gate\nconst_compare_raw_pointers"
+label = "ptr_maybe_eq intrinsic"
 name = "compare_raw_pointers"
-href = "https://github.com/rust-lang/rust/issues/53020"
 items = []
 requires = ["unconst_rules"]
 
