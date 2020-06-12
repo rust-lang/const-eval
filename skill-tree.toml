@@ -143,7 +143,7 @@ items = []
 [[group]]
 name = "const-assert-eq"
 label = "assert_eq!"
-requires = ["const-assert", "trait_impl", "format_args"]
+requires = ["const-assert", "trait_impl", "panic_fmt"]
 items = []
 
 [[group]]
@@ -151,6 +151,12 @@ name = "rfc"
 items = [
     { label = "const blocks", port = "2920", href = "https://github.com/rust-lang/rfcs/pull/2920" },
 ]
+
+[[group]]
+label = "panic! with formatting"
+name = "panic_fmt"
+requires = ["format_args", "panic"]
+items = []
 
 [[group]]
 label = "feature gate\nconst_panic"
