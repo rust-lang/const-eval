@@ -46,7 +46,7 @@ items = []
 [[group]]
 name = "slice_eq"
 label = "[T]::eq"
-requires = ["for", "compare_raw_pointers", "trait_impl"]
+requires = ["for", "fuzzy-ptr-comparisons", "trait_impl"]
 items = []
 
 [[group]]
@@ -64,13 +64,13 @@ items = []
 [[group]]
 name = "ptr-is-null"
 label = "<*T>::is_null"
-requires = ["ptr-comparisons", "compare_raw_pointers"]
+requires = ["fuzzy-ptr-comparisons"]
 items = []
 
 [[group]]
-name = "ptr-comparisons"
-label = "engine support for comparing raw pointers\nwith other raw pointers or with integers"
-requires = ["compare_raw_pointers"]
+name = "fuzzy-ptr-comparisons"
+label = "guaranteed_eq and\nguaranteed_ne"
+requires = []
 items = []
 
 [[group]]
@@ -159,12 +159,6 @@ href = "https://github.com/rust-lang/rust/pull/69825"
 items = []
 
 [[group]]
-label = "ptr_maybe_eq intrinsic"
-name = "compare_raw_pointers"
-items = []
-requires = ["unconst_rules"]
-
-[[group]]
 label = "feature gate\nconst_trait_bound_opt_out"
 name = "trait_bound_opt_out"
 href = "https://github.com/rust-lang/rust/issues/67794"
@@ -220,7 +214,7 @@ requires = ["string", "format_args"]
 label = "format_args!"
 name = "format_args"
 items = []
-requires = ["trait_impl", "compare_raw_pointers"]
+requires = ["trait_impl", "fuzzy-ptr-comparisons"]
 
 [[group]]
 label = "String operations"
