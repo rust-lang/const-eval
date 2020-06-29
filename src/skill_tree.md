@@ -1,5 +1,29 @@
 # Skill tree for const eval features
 
+<style>
+      /* the lines within the edges */
+      .edge:active path,
+      .edge:hover path {
+        stroke: fuchsia;
+        stroke-width: 3;
+        stroke-opacity: 1;
+      }
+      /* arrows are typically drawn with a polygon */
+      .edge:active polygon,
+      .edge:hover polygon {
+        stroke: fuchsia;
+        stroke-width: 3;
+        fill: fuchsia;
+        stroke-opacity: 1;
+        fill-opacity: 1;
+      }
+      /* If you happen to have text and want to color that as well... */
+      .edge:active text,
+      .edge:hover text {
+        fill: fuchsia;
+      }
+</style>
+
 ```skill-tree
 [[group]]
 name = "mut_ref"
