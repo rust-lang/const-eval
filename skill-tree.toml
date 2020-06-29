@@ -32,33 +32,21 @@ items = []
 href = "https://github.com/rust-lang/const-eval/issues/20"
 
 [[group]]
-name = "recursive_loop"
-label = "emulate loops via\nrecursive functions"
-requires = ["if_match"]
-items = []
-
-[[group]]
-name = "while_let"
-label = "while let loops"
-requires = ["loop", "if_match"]
-items = []
-
-[[group]]
 name = "iterators"
 label = "iterators"
-requires = ["mut_ref", "if_match", "trait_impl"]
+requires = ["mut_ref", "trait_impl"]
 items = []
 
 [[group]]
 name = "for"
 label = "for loops"
-requires = ["while_let", "trait_impl", "mut_ref"]
+requires = ["trait_impl", "mut_ref"]
 items = []
 
 [[group]]
 name = "slice_eq"
 label = "[T]::eq"
-requires = ["for", "if_match", "compare_raw_pointers", "trait_impl"]
+requires = ["for", "compare_raw_pointers", "trait_impl"]
 items = []
 
 [[group]]
@@ -94,7 +82,7 @@ href = "https://github.com/rust-lang/const-eval/issues/14"
 [[group]]
 name = "question_mark"
 label = "using ? in const"
-requires = ["if_match", "trait_impl"]
+requires = ["trait_impl"]
 items = []
 
 [[group]]
@@ -121,7 +109,7 @@ items = []
 [[group]]
 name = "int_parse"
 label = "<int>::from_str"
-requires = ["from_str", "loop", "iterators"]
+requires = ["from_str", "iterators"]
 items = []
 
 [[group]]
@@ -137,7 +125,7 @@ items = [
 [[group]]
 name = "const-assert"
 label = "assert!"
-requires = ["panic", "if_match"]
+requires = ["panic"]
 items = []
 
 [[group]]
@@ -180,18 +168,6 @@ requires = ["unconst_rules"]
 label = "feature gate\nconst_trait_bound_opt_out"
 name = "trait_bound_opt_out"
 href = "https://github.com/rust-lang/rust/issues/67794"
-items = []
-
-[[group]]
-label = "feature gate\nconst_loop"
-name = "loop"
-href="https://github.com/rust-lang/rust/issues/52000"
-items = []
-
-[[group]]
-label = "feature gate\nconst_if_match"
-name = "if_match"
-href="https://github.com/rust-lang/rust/issues/49146"
 items = []
 
 [[group]]
@@ -244,7 +220,7 @@ requires = ["string", "format_args"]
 label = "format_args!"
 name = "format_args"
 items = []
-requires = ["trait_impl", "if_match", "loop", "compare_raw_pointers"]
+requires = ["trait_impl", "compare_raw_pointers"]
 
 [[group]]
 label = "String operations"
@@ -256,7 +232,7 @@ requires = ["vec"]
 label = "Vec operations"
 name = "vec"
 items = []
-requires = ["mut_ref", "heap", "if_match", "loop", "trait_impl", "drop", "raw_ptr_deref"]
+requires = ["mut_ref", "heap", "trait_impl", "drop", "raw_ptr_deref"]
 
 [[group]]
 label = "Drop"
