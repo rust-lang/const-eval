@@ -1,6 +1,5 @@
-# Skill tree for const eval features
+# Skill Tree
 
-1. Install the `skill-tree` tool via `cargo install --git https://github.com/nikomatsakis/skill-tree.git`
-2. Run `skill-tree skill-tree.toml skill-tree`
-3. Run `http skill-tree` (install via `cargo install http`, or use any other easy http hoster)
-4. Open http://localhost:8000/skill-tree.html
+The Skill Tree is a visual representation of the dependencies of feature gates or unimplemented
+features that are needed for certain high level features. You can view it by using `mdbook serve`
+to host a small local web server rendering the skill tree for you.
