@@ -18,14 +18,14 @@ href = "https://github.com/rust-lang/const-eval/issues/25"
 items = []
 
 [[group]]
-name = "heap"
+name = "final_heap"
 label = "heap allocations\nin the final value of constants"
-requires = ["transient_heap"]
+requires = ["heap"]
 href = "https://github.com/rust-lang/const-eval/issues/20"
 items = []
 
 [[group]]
-name = "transient_heap"
+name = "heap"
 label = "heap allocations"
 requires = []
 items = []
@@ -90,7 +90,7 @@ name = "mutex_new"
 label = "Mutex::new"
 href = "https://github.com/rust-lang/rust/issues/66806"
 items = []
-requires = ["heap", "parking_lot", "unconst_rules"]
+requires = ["final_heap", "parking_lot", "unconst_rules"]
 
 [[group]]
 name = "const_fn_in_patterns"
