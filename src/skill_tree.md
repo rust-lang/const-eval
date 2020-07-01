@@ -65,6 +65,12 @@ requires = ["mut_ref", "trait_impl"]
 items = []
 
 [[group]]
+name = "iterator combinators"
+label = "iterator_combinators"
+requires = ["iterators", "closures"]
+items = []
+
+[[group]]
 name = "for"
 label = "for loops"
 requires = ["trait_impl", "mut_ref"]
@@ -260,4 +266,10 @@ label = "Drop"
 name = "drop"
 items = []
 requires = ["mut_ref", "trait_impl"]
+
+[[group]]
+label = "Closures"
+name = "closure"
+items = []
+requires = []
 ```
