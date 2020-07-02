@@ -268,8 +268,14 @@ items = []
 requires = ["mut_ref", "trait_impl"]
 
 [[group]]
-label = "Closures"
+label = "Defining and invoking\nClosures"
 name = "closure"
+items = []
+requires = []
+
+[[group]]
+label = "Unsized locals"
+name = "unsized_locals"
 items = []
 requires = []
 ```
