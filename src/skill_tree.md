@@ -260,4 +260,10 @@ label = "Drop"
 name = "drop"
 items = []
 requires = ["mut_ref", "trait_impl"]
+
+[[group]]
+label = "ptr::copy_nonoverlapping"
+name = "copy_nonoverlapping"
+items = []
+requires = ["raw_ptr_deref", "mut_ref"]
 ```
