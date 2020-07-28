@@ -42,7 +42,8 @@ pub fn test(x: &[u8]) -> bool {
 To ensure soundness of exhaustiveness checking, it is crucial that all data considered this check is fully immutable.
 In particular, for constants of reference type, it is important that they only point to immutable data.
 For this reason, the static const checks reject references to `static` items.
-This is a new soundness concern that otherwise does not come up during CTFE (where *reading from* a mutable `static` during const initialization is a problem, but just referencing a mutable `static` is not).
+This is a new soundness concern that otherwise does not come up during CTFE.
+Note that this is orthogonal to the concern of [*reading from* a mutable `static`](const.md#reading-statics) during const initialization, which is a problem for all `const` (even when they are not used in patterns) because it breaks the "inlining" property.
 A more precise check could be possible, but is non-trivial: even an immutable `static` could point to a mutable `static`; that would have to be excluded.
 (We could, in principle, also rely on it being UB to have a shared reference to mutable memory, but for now we prefer not to rely on the aliasing model like that---aliasing of global pointers is a tricky subject.)
 
