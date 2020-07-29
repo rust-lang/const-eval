@@ -50,12 +50,6 @@ requires = ["for", "fuzzy-ptr-comparisons", "trait_impl"]
 items = []
 
 [[group]]
-name = "transmute"
-label = "transmute"
-requires = ["unconst_rules"]
-items = []
-
-[[group]]
 name = "box_new"
 label = "Box::new"
 requires = ["heap", "trait_bound_opt_out", "drop"]
@@ -70,13 +64,16 @@ items = []
 [[group]]
 name = "fuzzy-ptr-comparisons"
 label = "guaranteed_eq and\nguaranteed_ne"
+href = "https://github.com/rust-lang/rust/issues/53020"
 requires = []
 items = []
 
 [[group]]
 name = "unconst_rules"
 label = "Need to come up\nwith a scheme\nfor doing unsafe\nin const fn"
-items = []
+items = [
+  { label = "transmute", href = "https://github.com/rust-lang/rust/issues/53605" }
+]
 href = "https://github.com/rust-lang/const-eval/issues/14"
 
 [[group]]
@@ -104,13 +101,9 @@ name = "from_str"
 label = "FromStr"
 href = "https://github.com/rust-lang/rust/issues/59133"
 requires = ["trait_impl"]
-items = []
-
-[[group]]
-name = "int_parse"
-label = "<int>::from_str"
-requires = ["from_str", "iterators"]
-items = []
+items = [
+  { label = "&lt;int&gt;::from_str", port="int_parse", requires = ["iterators"] },
+]
 
 [[group]]
 name = "const-float"
@@ -123,15 +116,10 @@ items = [
 ]
 
 [[group]]
-name = "const-assert"
-label = "assert!"
-requires = ["panic"]
-items = []
-
-[[group]]
 name = "const-assert-eq"
 label = "assert_eq!"
-requires = ["const-assert", "trait_impl", "panic_fmt"]
+requires = ["trait_impl", "panic_fmt"]
+href = "https://github.com/rust-lang/rust/issues/74925"
 items = []
 
 [[group]]
@@ -144,13 +132,16 @@ items = [
 label = "panic! with formatting"
 name = "panic_fmt"
 requires = ["format_args", "panic"]
+href = "https://github.com/rust-lang/rust/issues/51999"
 items = []
 
 [[group]]
 label = "feature gate\nconst_panic"
 name = "panic"
 href = "https://github.com/rust-lang/rust/issues/51999"
-items = []
+items = [
+  { label = "assert!" },
+]
 
 [[group]]
 label = "feature gate\nconst_discriminant"
@@ -168,7 +159,9 @@ items = []
 label = "feature gate\nconst_trait_impl"
 name = "trait_impl"
 href="https://github.com/rust-lang/rust/issues/67792"
-items = []
+items = [
+  { label = "?const trait bound opt out", href = "https://github.com/rust-lang/rust/issues/67794"}
+]
 
 [[group]]
 label = "feature gate\nconst_raw_ptr_deref"
@@ -239,3 +232,10 @@ label = "ptr::copy_nonoverlapping"
 name = "copy_nonoverlapping"
 items = []
 requires = ["raw_ptr_deref", "mut_ref"]
+
+[[group]]
+label = "async functions\nand blocks"
+name = "asnyc"
+items = []
+href = "https://github.com/rust-lang/rust/issues/69431"
+requires = ["trait_impl"]
