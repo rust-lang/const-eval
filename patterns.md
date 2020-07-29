@@ -1,6 +1,6 @@
 # Constants in patterns
 
-Constants that pass the [structural equality check](https://github.com/rust-lang/rust/issues/74446) can be used in patterns:
+Constants that pass the [structural equality check][struct-eq] can be used in patterns:
 ```rust
 const FOO: i32 = 13;
 
@@ -13,8 +13,11 @@ fn is_foo(x: i32) -> bool {
 ```
 However, that check has some loopholes, so e.g. `&T` can be used in a pattern no matter the `T`.
 
-A const-pattern is compiled by calling `PartialEq::eq` to compare the subject of the `match` with the constant,
+A const-pattern is compiled by [calling `PartialEq::eq`][compile-partial-eq] to compare the subject of the `match` with the constant,
 except for TODO where the constant is treated as if it was inlined as a pattern (and the usual `match` tree is constructed).
+
+[struct-eq]: https://github.com/rust-lang/rust/blob/2c28244cf0fc9868f55070e55b8f332d196eaf3f/src/librustc_mir_build/hair/pattern/const_to_pat.rs#L121
+[compile-partial-eq]: https://github.com/rust-lang/rust/blob/2c28244cf0fc9868f55070e55b8f332d196eaf3f/src/librustc_mir_build/build/matches/test.rs#L355
 
 ## Soundness concerns
 
