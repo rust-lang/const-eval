@@ -1,0 +1,10 @@
+[book]
+authors = ["Oliver Scherer"]
+language = "en"
+multilingual = false
+src = "src"
+title = "const-eval"
+[preprocessor.skill-tree]
+command = "mdbook-skill-tree"
+[output.html]
+additional-js =["viz.js", "full.render.js", "skill-tree.js"]

@@ -20,6 +20,7 @@ which sort of is a virtual machine using `MIR` as "bytecode".
 
 ## Table of Contents
 
+* [Unstable Feature Skill Tree](skill-tree.md)
 * [Const Safety](const_safety.md)
 * [Static and dynamic checks](const_checks.md)
 * The three "kinds" of compile-time evaluated data:
