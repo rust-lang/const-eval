@@ -62,6 +62,7 @@ items = []
 name = "ptr-is-null"
 label = "<*T>::is_null"
 requires = ["fuzzy-ptr-comparisons"]
+href = "https://github.com/rust-lang/rust/issues/74939"
 items = []
 
 [[group]]
