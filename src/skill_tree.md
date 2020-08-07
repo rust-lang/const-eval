@@ -3,13 +3,13 @@
 ```skill-tree
 [[group]]
 name = "mut_ref"
-label = "mutable references"
+label = "mutable references in\nconst fn"
 href = "https://github.com/rust-lang/rust/issues/57349"
 items = []
 
 [[group]]
 name = "const_mut_ref"
-label = "constants with mutable\nreferences in their final value"
+label = "mutable references in\ninitializers of const items"
 href = "https://github.com/rust-lang/rust/issues/71212"
 requires = ["mut_ref"]
 items = []
