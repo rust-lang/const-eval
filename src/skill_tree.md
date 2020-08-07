@@ -85,15 +85,19 @@ href = "https://github.com/rust-lang/const-eval/issues/14"
 [[group]]
 name = "offset_of"
 label = "offset_of"
-items = [
-  { label = "offset_from", href = "https://github.com/rust-lang/rust/issues/41079", port = "offset_from" },
-]
 href = "https://github.com/rust-lang/rust/issues/71499"
 requires = [
   "unconst_rules:raw_ptr_deref",
   "raw_ref_macros",
   "maybe_uninit_as_ptr",
+  "offset_from",
 ]
+
+[[group]]
+name = "offset_from"
+label = "offset_from"
+href = "https://github.com/rust-lang/rust/issues/41079"
+items = []
 
 [[group]]
 name = "raw_ref_macros"
