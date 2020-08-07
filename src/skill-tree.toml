@@ -40,7 +40,7 @@ items = []
 [[group]]
 name = "for"
 label = "for loops"
-requires = ["trait_impl", "mut_ref"]
+requires = ["iterators", "mut_ref"]
 items = []
 
 [[group]]
@@ -59,6 +59,7 @@ items = []
 name = "ptr-is-null"
 label = "<*T>::is_null"
 requires = ["fuzzy-ptr-comparisons"]
+href = "https://github.com/rust-lang/rust/issues/74939"
 items = []
 
 [[group]]
@@ -80,6 +81,7 @@ href = "https://github.com/rust-lang/const-eval/issues/14"
 name = "question_mark"
 label = "using ? in const"
 requires = ["trait_impl"]
+href = "https://github.com/rust-lang/rust/issues/74935"
 items = []
 
 [[group]]
