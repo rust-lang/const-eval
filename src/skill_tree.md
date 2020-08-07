@@ -115,6 +115,7 @@ items = []
 [[group]]
 name = "question_mark"
 label = "using ? in const"
+href = "https://github.com/rust-lang/rust/issues/74935"
 requires = ["trait_impl"]
 items = []
 
