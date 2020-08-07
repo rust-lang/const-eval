@@ -119,7 +119,12 @@ name = "mutex_new"
 label = "Mutex::new"
 href = "https://github.com/rust-lang/rust/issues/66806"
 items = []
-requires = ["parking_lot", "unconst_rules"]
+
+[[group]]
+name = "parking_lot"
+label = "`parking_lot` in `std`"
+href = "https://github.com/rust-lang/rust/issues/73714"
+items = []
 
 [[group]]
 name = "const_fn_in_patterns"
