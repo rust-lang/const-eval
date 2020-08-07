@@ -17,8 +17,18 @@ jobs:
           mdbook-version: '0.4.1'
           # mdbook-version: 'latest'
 
+      - name: Cache multiple paths
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/bin
+          key: ${{ runner.os }}
+
       - name: Install mdbook-skill-tree
-        run: cargo install -f mdbook-skill-tree
+        run: cargo install --git https://github.com/nikomatsakis/skill-tree.git mdbook-skill-tree
+
+      - name: Install skill tree files
+        run: mdbook-skill-tree install
 
       - run: mdbook build
 

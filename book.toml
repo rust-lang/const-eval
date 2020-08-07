@@ -8,3 +8,4 @@ title = "const-eval"
 command = "mdbook-skill-tree"
 [output.html]
 additional-js =["viz.js", "full.render.js", "skill-tree.js"]
+additional-css =["skill-tree.css"]
