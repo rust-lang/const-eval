@@ -17,6 +17,9 @@ jobs:
           mdbook-version: '0.4.1'
           # mdbook-version: 'latest'
 
+      - name: Install mdbook-skill-tree
+        run: cargo install -f mdbook-skill-tree
+
       - run: mdbook build
 
       - name: Deploy
