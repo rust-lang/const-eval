@@ -26,6 +26,7 @@ jobs:
 
       - name: Install mdbook-skill-tree
         run: cargo install --git https://github.com/nikomatsakis/skill-tree.git mdbook-skill-tree
+        continue-on-error: true # we don't care if this is already cached
 
       - name: Install skill tree files
         run: mdbook-skill-tree install
