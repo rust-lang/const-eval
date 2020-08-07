@@ -74,10 +74,10 @@ items = []
 
 [[group]]
 name = "unconst_rules"
-label = "Need to come up\nwith a scheme\nfor doing unsafe\nin const fn"
+label = "Need to come up\nwith a scheme\nfor const unsafe/unconst"
 items = [
-  { label = "transmute", href = "https://github.com/rust-lang/rust/issues/53605" },
-  { label = "union field access", href = "https://github.com/rust-lang/rust/issues/51909", port = "union" },
+  { label = "transmute in functions", href = "https://github.com/rust-lang/rust/issues/53605" },
+  { label = "union field access in functions", href = "https://github.com/rust-lang/rust/issues/51909", port = "union" },
   { label = "deref of raw pointers", href = "https://github.com/rust-lang/rust/issues/51911", port = "raw_ptr_deref" },
 ]
 href = "https://github.com/rust-lang/const-eval/issues/14"
