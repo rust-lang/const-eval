@@ -124,6 +124,7 @@ name = "mutex_new"
 label = "Mutex::new"
 href = "https://github.com/rust-lang/rust/issues/66806"
 items = []
+requires = ["parking_lot"]
 
 [[group]]
 name = "parking_lot"
