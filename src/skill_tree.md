@@ -144,9 +144,7 @@ name = "from_str"
 label = "FromStr"
 href = "https://github.com/rust-lang/rust/issues/59133"
 requires = ["trait_impl"]
-items = [
-  { label = "&lt;int&gt;::from_str", port="int_parse", requires = ["iterators"] },
-]
+items = []
 
 [[group]]
 name = "float"
