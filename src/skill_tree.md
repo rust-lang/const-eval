@@ -86,6 +86,7 @@ href = "https://github.com/rust-lang/const-eval/issues/14"
 name = "offset_of"
 label = "offset_of"
 href = "https://github.com/rust-lang/rust/issues/71499"
+items = []
 requires = [
   "unconst_rules:raw_ptr_deref",
   "raw_ref_macros",
@@ -276,7 +277,7 @@ requires = ["unconst_rules:raw_ptr_deref", "mut_ref"]
 
 [[group]]
 label = "async functions\nand blocks"
-name = "asnyc"
+name = "async"
 items = []
 href = "https://github.com/rust-lang/rust/issues/69431"
 requires = ["trait_impl"]
