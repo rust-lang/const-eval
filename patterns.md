@@ -25,7 +25,7 @@ Most of the time there are no extra soundness concerns due to const-patterns; ex
 However, there is one exception: some constants participate in exhaustiveness checking.
 If a pattern is incorrectly considered exhaustive, that leads to a critical soundness bug.
 
-Exhaustiveness checking is done for constants of type TODO, as well as `&[u8]` and `&str` (but no other types with references).
+Exhaustiveness checking is done for all constants that do not have reference type, as well as `&[u8]` and `&str`.
 This means we can write:
 ```rust
 #![feature(exclusive_range_pattern)]
