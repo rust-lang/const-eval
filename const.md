@@ -12,6 +12,8 @@ To make this work, we need to ensure [const safety](const_safety.md).
 Based on this requirement, we allow other constants and [promoteds](promotion.md) to read from constants.
 This is why the value of a `const` is subject to validity checks.
 
+Constants can also be [used in patterns](patterns.md), which brings its own soundness concerns.
+
 ## References
 
 One issue is constants of reference type:
