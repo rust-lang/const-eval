@@ -94,6 +94,12 @@ requires = [
 ]
 
 [[group]]
+name = "offset"
+label = "offset\nfeature:const_ptr_offset"
+href = "https://github.com/rust-lang/rust/issues/71499"
+requires = ["unconst_rules"]
+
+[[group]]
 name = "offset_from"
 label = "offset_from\nfeature:ptr_offset_from"
 href = "https://github.com/rust-lang/rust/issues/41079"
