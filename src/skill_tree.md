@@ -3,13 +3,13 @@
 ```skill-tree
 [[group]]
 name = "mut_ref"
-label = "mutable references"
+label = "mutable references in\nconst fn\nfeature:const_mut_refs"
 href = "https://github.com/rust-lang/rust/issues/57349"
 items = []
 
 [[group]]
 name = "const_mut_ref"
-label = "constants with mutable\nreferences in their final value"
+label = "mutable references in\ninitializers of const items"
 href = "https://github.com/rust-lang/rust/issues/71212"
 requires = ["mut_ref"]
 items = []
@@ -60,28 +60,63 @@ items = []
 
 [[group]]
 name = "ptr-is-null"
-label = "<*T>::is_null"
+label = "<*T>::is_null\nfeature:const_ptr_is_null"
 requires = ["fuzzy-ptr-comparisons"]
+href = "https://github.com/rust-lang/rust/issues/74939"
 items = []
 
 [[group]]
 name = "fuzzy-ptr-comparisons"
-label = "guaranteed_eq and\nguaranteed_ne"
+label = "guaranteed_eq and\nguaranteed_ne\nfeature:const_compare_raw_pointers"
 href = "https://github.com/rust-lang/rust/issues/53020"
 requires = []
 items = []
 
 [[group]]
 name = "unconst_rules"
-label = "Need to come up\nwith a scheme\nfor doing unsafe\nin const fn"
+label = "Need to come up\nwith a scheme\nfor const unsafe/unconst"
 items = [
-  { label = "transmute", href = "https://github.com/rust-lang/rust/issues/53605" }
+  { label = "feature:const_fn_transmute", href = "https://github.com/rust-lang/rust/issues/53605" },
+  { label = "feature:const_fn_union", href = "https://github.com/rust-lang/rust/issues/51909", port = "union" },
+  { label = "feature:const_raw_ptr_deref", href = "https://github.com/rust-lang/rust/issues/51911", port = "raw_ptr_deref" },
 ]
 href = "https://github.com/rust-lang/const-eval/issues/14"
 
 [[group]]
+name = "offset_of"
+label = "offset_of\nfeature:const_ptr_offset"
+href = "https://github.com/rust-lang/rust/issues/71499"
+items = []
+requires = [
+  "unconst_rules:raw_ptr_deref",
+  "raw_ref_macros",
+  "maybe_uninit_as_ptr",
+  "offset_from",
+]
+
+[[group]]
+name = "offset_from"
+label = "offset_from\nfeature:ptr_offset_from"
+href = "https://github.com/rust-lang/rust/issues/41079"
+items = []
+
+[[group]]
+name = "raw_ref_macros"
+label = "raw_ref maros\nfeature:raw_ref_macros"
+href = "https://github.com/rust-lang/rust/issues/73394"
+items = []
+
+[[group]]
+name = "maybe_uninit_as_ptr"
+label = "MaybeUninit::as_ptr\nfeature:const_maybe_uninit_as_ptr"
+href = "https://github.com/rust-lang/rust/issues/75251"
+items = []
+
+
+[[group]]
 name = "question_mark"
 label = "using ? in const"
+href = "https://github.com/rust-lang/rust/issues/74935"
 requires = ["trait_impl"]
 items = []
 
@@ -90,7 +125,13 @@ name = "mutex_new"
 label = "Mutex::new"
 href = "https://github.com/rust-lang/rust/issues/66806"
 items = []
-requires = ["final_heap", "parking_lot", "unconst_rules"]
+requires = ["parking_lot"]
+
+[[group]]
+name = "parking_lot"
+label = "`parking_lot` in `std`"
+href = "https://github.com/rust-lang/rust/issues/73714"
+items = []
 
 [[group]]
 name = "const_fn_in_patterns"
@@ -104,19 +145,31 @@ name = "from_str"
 label = "FromStr"
 href = "https://github.com/rust-lang/rust/issues/59133"
 requires = ["trait_impl"]
-items = [
-  { label = "&lt;int&gt;::from_str", port="int_parse", requires = ["iterators"] },
-]
+items = []
 
 [[group]]
-name = "const-float"
+name = "float"
 label = "floats in const fn"
 href = "https://github.com/rust-lang/rust/issues/57241"
 items = [
     { label = "from_bits" },
     { label = "to_bits" },
-    { label = "general usage of float math,\narguments and return types" },
+    { label = "float math, arguments and return types" },
 ]
+
+[[group]]
+name = "float_classify"
+label = "feature:const_float_classify"
+href = "https://github.com/rust-lang/rust/issues/72505"
+items = []
+requires = ["float_bits_conv"]
+
+[[group]]
+name = "float_bits_conv"
+label = "feature:const_float_bits_conv"
+href = "https://github.com/rust-lang/rust/issues/72447"
+items = []
+requires = ["float"]
 
 [[group]]
 name = "const-assert-eq"
@@ -139,7 +192,7 @@ href = "https://github.com/rust-lang/rust/issues/51999"
 items = []
 
 [[group]]
-label = "feature gate\nconst_panic"
+label = "feature:const_panic"
 name = "panic"
 href = "https://github.com/rust-lang/rust/issues/51999"
 items = [
@@ -147,19 +200,19 @@ items = [
 ]
 
 [[group]]
-label = "feature gate\nconst_discriminant"
+label = "feature:const_discriminant"
 name = "discriminant"
 href = "https://github.com/rust-lang/rust/pull/69825"
 items = []
 
 [[group]]
-label = "feature gate\nconst_trait_bound_opt_out"
+label = "feature:const_trait_bound_opt_out"
 name = "trait_bound_opt_out"
 href = "https://github.com/rust-lang/rust/issues/67794"
 items = []
 
 [[group]]
-label = "feature gate\nconst_trait_impl"
+label = "feature:const_trait_impl"
 name = "trait_impl"
 href="https://github.com/rust-lang/rust/issues/67792"
 items = [
@@ -167,28 +220,14 @@ items = [
 ]
 
 [[group]]
-label = "feature gate\nconst_raw_ptr_deref"
-name = "raw_ptr_deref"
-href="https://github.com/rust-lang/rust/issues/51911"
-items = []
-requires = ["unconst_rules"]
-
-[[group]]
-label = "feature gate\nconst_raw_ptr_to_usize_cast"
+label = "feature:const_raw_ptr_to_usize_cast"
 name = "raw_ptr_to_usize_cast"
 href="https://github.com/rust-lang/rust/issues/51910"
 items = []
 requires = ["unconst_rules"]
 
 [[group]]
-label = "feature gate\nconst_fn_union"
-name = "union"
-href = "https://github.com/rust-lang/rust/issues/51909"
-items = []
-requires = ["unconst_rules"]
-
-[[group]]
-label = "feature gate\nconst_extern_fn"
+label = "feature:const_extern_fn"
 name = "extern_const_fn"
 href = "https://github.com/rust-lang/rust/issues/64926"
 items = []
@@ -222,7 +261,7 @@ requires = ["vec"]
 label = "Vec operations"
 name = "vec"
 items = []
-requires = ["mut_ref", "heap", "trait_impl", "drop", "raw_ptr_deref"]
+requires = ["mut_ref", "heap", "trait_impl", "drop", "unconst_rules:raw_ptr_deref"]
 
 [[group]]
 label = "Drop"
@@ -234,11 +273,11 @@ requires = ["mut_ref", "trait_impl"]
 label = "ptr::copy_nonoverlapping"
 name = "copy_nonoverlapping"
 items = []
-requires = ["raw_ptr_deref", "mut_ref"]
+requires = ["unconst_rules:raw_ptr_deref", "mut_ref"]
 
 [[group]]
 label = "async functions\nand blocks"
-name = "asnyc"
+name = "async"
 items = []
 href = "https://github.com/rust-lang/rust/issues/69431"
 requires = ["trait_impl"]
