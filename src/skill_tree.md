@@ -98,6 +98,7 @@ name = "offset"
 label = "offset\nfeature:const_ptr_offset"
 href = "https://github.com/rust-lang/rust/issues/71499"
 requires = ["unconst_rules"]
+items = []
 
 [[group]]
 name = "offset_from"
