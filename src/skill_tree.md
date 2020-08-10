@@ -137,7 +137,7 @@ items = []
 name = "const_fn_in_patterns"
 label = "const fn callable in patterns"
 href = "https://github.com/rust-lang/rust/issues/57240"
-requires = ["rfc:2920"]
+requires = ["const-blocks"]
 items = []
 
 [[group]]
@@ -179,10 +179,9 @@ href = "https://github.com/rust-lang/rust/issues/74925"
 items = []
 
 [[group]]
-name = "rfc"
-items = [
-    { label = "const blocks", port = "2920", href = "https://github.com/rust-lang/rfcs/pull/2920" },
-]
+name = "const-blocks"
+label = "const blocks"
+href = "https://github.com/rust-lang/rfcs/pull/2920"
 
 [[group]]
 label = "panic! with formatting"
