@@ -3,7 +3,7 @@
 ```skill-tree
 [[group]]
 name = "mut_ref"
-label = "mutable references in\nconst fn"
+label = "mutable references in\nconst fn\nfg:const_mut_refs"
 href = "https://github.com/rust-lang/rust/issues/57349"
 items = []
 
@@ -60,14 +60,14 @@ items = []
 
 [[group]]
 name = "ptr-is-null"
-label = "<*T>::is_null"
+label = "<*T>::is_null\nfg:const_ptr_is_null"
 requires = ["fuzzy-ptr-comparisons"]
 href = "https://github.com/rust-lang/rust/issues/74939"
 items = []
 
 [[group]]
 name = "fuzzy-ptr-comparisons"
-label = "guaranteed_eq and\nguaranteed_ne"
+label = "guaranteed_eq and\nguaranteed_ne\nfg:const_compare_raw_pointers"
 href = "https://github.com/rust-lang/rust/issues/53020"
 requires = []
 items = []
@@ -76,15 +76,15 @@ items = []
 name = "unconst_rules"
 label = "Need to come up\nwith a scheme\nfor const unsafe/unconst"
 items = [
-  { label = "transmute in functions", href = "https://github.com/rust-lang/rust/issues/53605" },
-  { label = "union field access in functions", href = "https://github.com/rust-lang/rust/issues/51909", port = "union" },
-  { label = "deref of raw pointers", href = "https://github.com/rust-lang/rust/issues/51911", port = "raw_ptr_deref" },
+  { label = "transmute in functions\nfg:const_fn_transmute", href = "https://github.com/rust-lang/rust/issues/53605" },
+  { label = "union field access in functions\nfg:const_fn_union", href = "https://github.com/rust-lang/rust/issues/51909", port = "union" },
+  { label = "deref of raw pointers\nfg:const_raw_ptr_deref", href = "https://github.com/rust-lang/rust/issues/51911", port = "raw_ptr_deref" },
 ]
 href = "https://github.com/rust-lang/const-eval/issues/14"
 
 [[group]]
 name = "offset_of"
-label = "offset_of"
+label = "offset_of\nfg:const_ptr_offset"
 href = "https://github.com/rust-lang/rust/issues/71499"
 items = []
 requires = [
@@ -96,19 +96,19 @@ requires = [
 
 [[group]]
 name = "offset_from"
-label = "offset_from"
+label = "offset_from\nfg:ptr_offset_from"
 href = "https://github.com/rust-lang/rust/issues/41079"
 items = []
 
 [[group]]
 name = "raw_ref_macros"
-label = "raw_ref maros"
+label = "raw_ref maros\nfg:raw_ref_macros"
 href = "https://github.com/rust-lang/rust/issues/73394"
 items = []
 
 [[group]]
 name = "maybe_uninit_as_ptr"
-label = "MaybeUninit::as_ptr"
+label = "MaybeUninit::as_ptr\nfg:const_maybe_uninit_as_ptr"
 href = "https://github.com/rust-lang/rust/issues/75251"
 items = []
 
@@ -159,14 +159,14 @@ items = [
 
 [[group]]
 name = "float_classify"
-label = "float_classify"
+label = "fg:const_float_classify"
 href = "https://github.com/rust-lang/rust/issues/72505"
 items = []
 requires = ["float_bits_conv"]
 
 [[group]]
 name = "float_bits_conv"
-label = "float_bits_conv"
+label = "fg:const_float_bits_conv"
 href = "https://github.com/rust-lang/rust/issues/72447"
 items = []
 requires = ["float"]
@@ -192,7 +192,7 @@ href = "https://github.com/rust-lang/rust/issues/51999"
 items = []
 
 [[group]]
-label = "feature gate\nconst_panic"
+label = "fg:const_panic"
 name = "panic"
 href = "https://github.com/rust-lang/rust/issues/51999"
 items = [
@@ -200,19 +200,19 @@ items = [
 ]
 
 [[group]]
-label = "feature gate\nconst_discriminant"
+label = "fg:const_discriminant"
 name = "discriminant"
 href = "https://github.com/rust-lang/rust/pull/69825"
 items = []
 
 [[group]]
-label = "feature gate\nconst_trait_bound_opt_out"
+label = "fg:const_trait_bound_opt_out"
 name = "trait_bound_opt_out"
 href = "https://github.com/rust-lang/rust/issues/67794"
 items = []
 
 [[group]]
-label = "feature gate\nconst_trait_impl"
+label = "fg:const_trait_impl"
 name = "trait_impl"
 href="https://github.com/rust-lang/rust/issues/67792"
 items = [
@@ -220,14 +220,14 @@ items = [
 ]
 
 [[group]]
-label = "feature gate\nconst_raw_ptr_to_usize_cast"
+label = "fg:const_raw_ptr_to_usize_cast"
 name = "raw_ptr_to_usize_cast"
 href="https://github.com/rust-lang/rust/issues/51910"
 items = []
 requires = ["unconst_rules"]
 
 [[group]]
-label = "feature gate\nconst_extern_fn"
+label = "fg:const_extern_fn"
 name = "extern_const_fn"
 href = "https://github.com/rust-lang/rust/issues/64926"
 items = []
