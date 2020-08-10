@@ -84,8 +84,7 @@ href = "https://github.com/rust-lang/const-eval/issues/14"
 
 [[group]]
 name = "offset_of"
-label = "offset_of\nfeature:const_ptr_offset"
-href = "https://github.com/rust-lang/rust/issues/71499"
+label = "offset_of"
 items = []
 requires = [
   "unconst_rules:raw_ptr_deref",
@@ -93,6 +92,12 @@ requires = [
   "maybe_uninit_as_ptr",
   "offset_from",
 ]
+
+[[group]]
+name = "offset"
+label = "offset\nfeature:const_ptr_offset"
+href = "https://github.com/rust-lang/rust/issues/71499"
+requires = ["unconst_rules"]
 
 [[group]]
 name = "offset_from"
@@ -137,7 +142,7 @@ items = []
 name = "const_fn_in_patterns"
 label = "const fn callable in patterns"
 href = "https://github.com/rust-lang/rust/issues/57240"
-requires = ["rfc:2920"]
+requires = ["const-blocks"]
 items = []
 
 [[group]]
@@ -179,10 +184,9 @@ href = "https://github.com/rust-lang/rust/issues/74925"
 items = []
 
 [[group]]
-name = "rfc"
-items = [
-    { label = "const blocks", port = "2920", href = "https://github.com/rust-lang/rfcs/pull/2920" },
-]
+name = "const-blocks"
+label = "const blocks"
+href = "https://github.com/rust-lang/rfcs/pull/2920"
 
 [[group]]
 label = "panic! with formatting"
