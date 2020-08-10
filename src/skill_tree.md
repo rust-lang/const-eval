@@ -188,6 +188,7 @@ items = []
 name = "const-blocks"
 label = "const blocks"
 href = "https://github.com/rust-lang/rfcs/pull/2920"
+items = []
 
 [[group]]
 label = "panic! with formatting"
