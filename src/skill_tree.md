@@ -84,8 +84,7 @@ href = "https://github.com/rust-lang/const-eval/issues/14"
 
 [[group]]
 name = "offset_of"
-label = "offset_of\nfeature:const_ptr_offset"
-href = "https://github.com/rust-lang/rust/issues/71499"
+label = "offset_of"
 items = []
 requires = [
   "unconst_rules:raw_ptr_deref",
