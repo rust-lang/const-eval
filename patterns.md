@@ -13,7 +13,11 @@ fn is_foo(x: i32) -> bool {
 ```
 However, that check has some loopholes, so e.g. `&T` can be used in a pattern no matter the `T`.
 
-Any reference type const-pattern is compiled by [calling `PartialEq::eq`][compile-partial-eq] to compare the subject of the `match` with the constant. Const-patterns with other types (enum, struct, tuple, array) are treated as if the constant was inlined as a pattern (and the usual `match` tree is constructed).
+The way this works is that the constant is converted to a [THIR pattern](https://doc.rust-lang.org/nightly/nightly-rustc/rustc_mir_build/thir/pattern/enum.PatKind.html).
+This proceeds recursively through fields of the constant until we hit a reference.
+Then, `&[u8]` and `&str` are treated specially, while everything else becomes just a `PatKind::Constant`.
+
+For further compilation, `Constant` are translated to [`PartialEq::eq`][compile-partial-eq], whereas everything else is translated as if the constant was inlined as a pattern.
 [RFC 1445](https://github.com/rust-lang/rfcs/blob/master/text/1445-restrict-constants-in-patterns.md) lays the groundwork for changing this in the future to always using `PartialEq::eq`, but no decision either way has been made yet.
 
 [struct-eq]: https://github.com/rust-lang/rust/blob/2c28244cf0fc9868f55070e55b8f332d196eaf3f/src/librustc_mir_build/hair/pattern/const_to_pat.rs#L121
@@ -25,7 +29,7 @@ Most of the time there are no extra soundness concerns due to const-patterns; ex
 However, there is one exception: some constants participate in exhaustiveness checking.
 If a pattern is incorrectly considered exhaustive, that leads to a critical soundness bug.
 
-Exhaustiveness checking is done for all constants that do not have reference type, as well as `&[u8]` and `&str`.
+Exhaustiveness checking is done based on the THIR pattern tree, with `PatKind::Constant` being ignored.
 This means we can write:
 ```rust
 #![feature(exclusive_range_pattern)]
