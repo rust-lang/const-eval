@@ -66,7 +66,7 @@ Currently, non-`Copy` array initialization is treated as an implicit context,
 because the code could compile even without promotion (namely, if the result
 type is `Copy`).
 
-CTFE of implicitly promoted code must never fail to evaluate except of the
+CTFE of implicitly promoted code must never fail to evaluate except if the
 run-time code also would have failed. This means we cannot permit calling
 arbitrary `const fn`, as we cannot predict if they are going to perform an
 ["unconst" operation](const_safety.md). Thus, only functions marked
