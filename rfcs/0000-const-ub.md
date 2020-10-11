@@ -64,8 +64,13 @@ While compiling untrusted code should only be done with care (including addition
 # Prior art
 [prior-art]: #prior-art
 
-TODO: what does C++ constexpr do?
-Any other languages we want to compare with?
+C++ requires compilers to detect UB in `constexpr`.
+However, the fragment of C++ that is available to `constexpr` excludes pointer casts (TODO: and pointer arithmetic and unions?), which makes such checks not very complicated and avoids all the poorly specified parts of UB.
+
+If we found a way to run CTFE on unoptimized MIR, then detecting UB for programs that do not use unions, `transmute`, or raw pointers is not very hard.
+CTFE already has almost all the checks required for this, except for alignment checks which are disabled during CTFE.
+(Disabling them was the easiest way forward to solve some issues around packed structs in patterns, but we could use a different solution and reinstate CTFE alignment checks.
+The relevant code paths still exist for Miri.)
 
 # Unresolved questions
 [unresolved-questions]: #unresolved-questions
