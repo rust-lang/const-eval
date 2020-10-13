@@ -67,7 +67,7 @@ While compiling untrusted code should only be done with care (including addition
 [prior-art]: #prior-art
 
 C++ requires compilers to detect UB in `constexpr`.
-However, the fragment of C++ that is available to `constexpr` excludes pointer casts (TODO: and pointer arithmetic and unions?), which makes such checks not very complicated and avoids all the poorly specified parts of UB.
+However, the fragment of C++ that is available to `constexpr` excludes pointer casts, pointer arithmetic (beyond array bounds), and union-based type punning, which makes such checks not very complicated and avoids most of the poorly specified parts of UB.
 
 If we found a way to run CTFE on unoptimized MIR, then detecting UB for programs that do not use unions, `transmute`, or raw pointers is not very hard.
 CTFE already has almost all the checks required for this, except for alignment checks which are disabled during CTFE.
