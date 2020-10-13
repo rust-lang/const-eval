@@ -28,11 +28,13 @@ For example, when UB arises while computing an array length, then the final arra
 No guarantees are made about this final value, and it can be different depending on host and target architecture, compiler flags, and more.
 However, UB will not otherwise adversely affect the currently running compiler; type-checking and lints and everything else will work correctly given whatever the result of the CTFE computation is.
 
+Note, however, that this means compile-time UB can later cause runtime UB when the program is actually executed:
+for example, if there is UB while computing the initial value of a `Vec<i32>`, the result might be a completely invalid vector that causes UB at runtime when used in the program.
+
 Sometimes, the compiler might be able to detect such problems and show an error or warning about CTFE computation having gone wrong (for example, the compiler might detect when the array length ends up being uninitialized).
 But other times, this might not be the case -- UB is not reliably detected during CTFE.
-
-Note, in particular, that this means compile-time UB can later cause runtime UB when the program is actually executed:
-for example, if there is UB while computing the initial value of a `Vec<i32>`, the result might be a completely invalid vector that causes UB at runtime when used in the program.
+This can change from compiler version to compiler version: CTFE code that causes UB could build fine with one compiler and fail to build with another.
+(This is in accordance with the general policy that unsound code is not subject to strict stability guarantees.)
 
 # Reference-level explanation
 [reference-level-explanation]: #reference-level-explanation
