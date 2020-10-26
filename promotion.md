@@ -70,13 +70,10 @@ promotion.
 
 Currently, the following are considered explicit promotion contexts:
 * `#[rustc_args_required_const]` arguments and inline assembly `const` operands everywhere.
-* Everything inside the bodies of `const` and `static` items. (Note: this is handled separately from "explicit contexts" in promotion analysis, but the effect is the same.)
+* Everything inside the bodies of `const` and `static` items. (Note: this is handled separately from "explicit contexts" in promotion analysis, but the effect is the same.
+The arguments given above for justifying explicit promotion do not apply here. Currently, this works out because failing to evaluate one of these promoteds just leads to a warning, but longer-term it would be desirable to turn evaluation failures into hard errors, which for these promoteds means we have to guarantee that we only evaluate them on-demand.)
 
 In these contexts, we promote calls to arbitrary `const fn`.
-
-There is one further special case for the bodies of `const` and `static` items; here we additionally promote union field accesses.
-Both of these special cases can lead to promoting things that can fail to evaluate.
-Currently, this works out because it just leads to a warning, but longer-term it would be desirable to turn evaluation failures into hard errors, which for these promoteds means we have to guarantee that we only evaluate them on-demand.
 
 [See below][static access] for another special case in promotion analysis:
 accesses and references to statics are only promoted inside other statics.
