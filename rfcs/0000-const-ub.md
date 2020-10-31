@@ -51,6 +51,12 @@ All of this UB has in common that there is an "obvious" way to continue evaluati
 we can just access the underlying memory despite alignment and/or aliasing rules being violated, and we can just ignore the existence of an invalid value as long as it is not used in some arithmetic, logical or control-flow operation.
 There is no guarantee that CTFE detects such UB: evaluation may either fail with an error, or continue with the "obvious" result.
 
+If the compile-time evaluation uses operations that are specified as non-deterministic,
+and only some of the non-deterministic choices lead to CTFE-detected UB,
+then CTFE may choose any possible execution and thus miss the possible UB.
+For example, if we end up specifying the value of padding after a typed copy to be non-deterministically chosen, then padding will be initialized in some executions and uninitialized in others.
+If the program then performs integer arithmetic on a padding byte, that might or might not be detected as UB, depending on the non-deterministic choice made by CTFE.
+
 ## Note to implementors
 
 This requirement implies that CTFE must happen on code that was *not subject to UB-exploiting optimizations*.
