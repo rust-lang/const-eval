@@ -45,7 +45,7 @@ Other kinds of UB might or might not be detected:
 * Dereferencing unaligned pointers.
 * Violating Rust's aliasing rules.
 * Producing an invalid value (but not using it in one of the ways defined above).
-* Anything [other UB][UB] not listed here.
+* Any [other UB][UB] not listed here.
 
 All of this UB has in common that there is an "obvious" way to continue evaluation even though the program has caused UB:
 we can just access the underlying memory despite alignment and/or aliasing rules being violated, and we can just ignore the existence of an invalid value as long as it is not used in some arithmetic, logical or control-flow operation.
