@@ -80,20 +80,37 @@ items = []
 
 [[group]]
 name = "unconst_rules"
-label = "Need to come up\nwith a scheme\nfor const unsafe/unconst"
-items = [
-  { label = "feature:const_fn_transmute", href = "https://github.com/rust-lang/rust/issues/53605" },
-  { label = "feature:const_fn_union", href = "https://github.com/rust-lang/rust/issues/51909", port = "union" },
-  { label = "feature:const_raw_ptr_deref", href = "https://github.com/rust-lang/rust/issues/51911", port = "raw_ptr_deref" },
-]
-href = "https://github.com/rust-lang/const-eval/issues/14"
+label = "UB in CTFE"
+href = "https://github.com/rust-lang/rfcs/pull/3016"
+items = []
+
+[[group]]
+name = "transmute"
+label = "feature:const_fn_transmute"
+items = []
+requires = ["unconst_rules"]
+href = "https://github.com/rust-lang/rust/issues/53605"
+
+[[group]]
+name = "union"
+label = "feature:const_fn_union"
+items = []
+requires = ["unconst_rules"]
+href = "https://github.com/rust-lang/rust/issues/51909"
+
+[[group]]
+name = "raw_ptr_deref"
+label = "feature:const_raw_ptr_deref"
+items = []
+requires = ["unconst_rules"]
+href = "https://github.com/rust-lang/rust/issues/51911"
 
 [[group]]
 name = "offset_of"
 label = "offset_of"
 items = []
 requires = [
-  "unconst_rules:raw_ptr_deref",
+  "raw_ptr_deref",
   "raw_ref_macros",
   "maybe_uninit_as_ptr",
   "offset_from",
@@ -273,7 +290,7 @@ requires = ["vec"]
 label = "Vec operations"
 name = "vec"
 items = []
-requires = ["mut_ref", "heap", "trait_impl", "drop", "unconst_rules:raw_ptr_deref"]
+requires = ["mut_ref", "heap", "trait_impl", "drop", "raw_ptr_deref"]
 
 [[group]]
 label = "Drop"
@@ -285,7 +302,7 @@ requires = ["mut_ref", "trait_impl"]
 label = "ptr::copy_nonoverlapping"
 name = "copy_nonoverlapping"
 items = []
-requires = ["unconst_rules:raw_ptr_deref", "mut_ref"]
+requires = ["raw_ptr_deref", "mut_ref"]
 
 [[group]]
 label = "async functions\nand blocks"
