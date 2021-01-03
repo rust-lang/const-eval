@@ -2,6 +2,12 @@
 
 ```skill-tree
 [[group]]
+name = "cell_ref"
+label = "references to interior mutability\nfeature:const_cell_refs"
+href = "https://github.com/rust-lang/rust/issues/79703"
+items = []
+
+[[group]]
 name = "mut_ref"
 label = "mutable references in\nconst fn\nfeature:const_mut_refs"
 href = "https://github.com/rust-lang/rust/issues/57349"
@@ -30,7 +36,7 @@ items = []
 [[group]]
 name = "heap"
 label = "heap allocations"
-requires = []
+requires = ["mut_ref", "cell_ref", "trait_impl"]
 items = []
 href = "https://github.com/rust-lang/const-eval/issues/20"
 
@@ -73,21 +79,45 @@ requires = []
 items = []
 
 [[group]]
+name = "unsafe_rules"
+label = "unsafe operations in CTFE"
+href = "https://github.com/rust-lang/rfcs/pull/3016"
+items = []
+
+[[group]]
 name = "unconst_rules"
-label = "Need to come up\nwith a scheme\nfor const unsafe/unconst"
-items = [
-  { label = "feature:const_fn_transmute", href = "https://github.com/rust-lang/rust/issues/53605" },
-  { label = "feature:const_fn_union", href = "https://github.com/rust-lang/rust/issues/51909", port = "union" },
-  { label = "feature:const_raw_ptr_deref", href = "https://github.com/rust-lang/rust/issues/51911", port = "raw_ptr_deref" },
-]
+label = "unconst operations"
 href = "https://github.com/rust-lang/const-eval/issues/14"
+items = []
+requires = ["unsafe_rules"]
+
+[[group]]
+name = "transmute"
+label = "feature:const_fn_transmute"
+items = []
+requires = ["unsafe_rules"]
+href = "https://github.com/rust-lang/rust/issues/53605"
+
+[[group]]
+name = "union"
+label = "feature:const_fn_union"
+items = []
+requires = ["unsafe_rules"]
+href = "https://github.com/rust-lang/rust/issues/51909"
+
+[[group]]
+name = "raw_ptr_deref"
+label = "feature:const_raw_ptr_deref"
+items = []
+requires = ["unsafe_rules"]
+href = "https://github.com/rust-lang/rust/issues/51911"
 
 [[group]]
 name = "offset_of"
 label = "offset_of"
 items = []
 requires = [
-  "unconst_rules:raw_ptr_deref",
+  "raw_ptr_deref",
   "raw_ref_macros",
   "maybe_uninit_as_ptr",
   "offset_from",
@@ -97,7 +127,7 @@ requires = [
 name = "offset"
 label = "offset\nfeature:const_ptr_offset"
 href = "https://github.com/rust-lang/rust/issues/71499"
-requires = ["unconst_rules"]
+requires = ["unsafe_rules"]
 items = []
 
 [[group]]
@@ -186,8 +216,8 @@ items = []
 
 [[group]]
 name = "const-blocks"
-label = "const blocks"
-href = "https://github.com/rust-lang/rfcs/pull/2920"
+label = "inline const"
+href = "https://github.com/rust-lang/rust/issues/76001"
 items = []
 
 [[group]]
@@ -221,9 +251,8 @@ items = []
 label = "feature:const_trait_impl"
 name = "trait_impl"
 href="https://github.com/rust-lang/rust/issues/67792"
-items = [
-  { label = "?const trait bound opt out", href = "https://github.com/rust-lang/rust/issues/67794"}
-]
+items = []
+requires = ["trait_bound_opt_out"]
 
 [[group]]
 label = "feature:const_raw_ptr_to_usize_cast"
@@ -267,7 +296,7 @@ requires = ["vec"]
 label = "Vec operations"
 name = "vec"
 items = []
-requires = ["mut_ref", "heap", "trait_impl", "drop", "unconst_rules:raw_ptr_deref"]
+requires = ["mut_ref", "heap", "trait_impl", "drop", "raw_ptr_deref"]
 
 [[group]]
 label = "Drop"
@@ -279,7 +308,7 @@ requires = ["mut_ref", "trait_impl"]
 label = "ptr::copy_nonoverlapping"
 name = "copy_nonoverlapping"
 items = []
-requires = ["unconst_rules:raw_ptr_deref", "mut_ref"]
+requires = ["raw_ptr_deref", "mut_ref"]
 
 [[group]]
 label = "async functions\nand blocks"
