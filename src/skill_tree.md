@@ -2,6 +2,12 @@
 
 ```skill-tree
 [[group]]
+name = "cell_ref"
+label = "references to interior mutability\nfeature:const_cell_refs"
+href = "https://github.com/rust-lang/rust/issues/79703"
+items = []
+
+[[group]]
 name = "mut_ref"
 label = "mutable references in\nconst fn\nfeature:const_mut_refs"
 href = "https://github.com/rust-lang/rust/issues/57349"
@@ -30,7 +36,7 @@ items = []
 [[group]]
 name = "heap"
 label = "heap allocations"
-requires = []
+requires = ["mut_ref", "cell_ref", "trait_impl"]
 items = []
 href = "https://github.com/rust-lang/const-eval/issues/20"
 
