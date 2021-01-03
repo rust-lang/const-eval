@@ -79,30 +79,37 @@ requires = []
 items = []
 
 [[group]]
-name = "unconst_rules"
-label = "UB in CTFE"
+name = "unsafe_rules"
+label = "unsafe operations in CTFE"
 href = "https://github.com/rust-lang/rfcs/pull/3016"
 items = []
+
+[[group]]
+name = "unconst_rules"
+label = "unconst operations"
+href = "https://github.com/rust-lang/const-eval/issues/14"
+items = []
+requires = ["unsafe_rules"]
 
 [[group]]
 name = "transmute"
 label = "feature:const_fn_transmute"
 items = []
-requires = ["unconst_rules"]
+requires = ["unsafe_rules"]
 href = "https://github.com/rust-lang/rust/issues/53605"
 
 [[group]]
 name = "union"
 label = "feature:const_fn_union"
 items = []
-requires = ["unconst_rules"]
+requires = ["unsafe_rules"]
 href = "https://github.com/rust-lang/rust/issues/51909"
 
 [[group]]
 name = "raw_ptr_deref"
 label = "feature:const_raw_ptr_deref"
 items = []
-requires = ["unconst_rules"]
+requires = ["unsafe_rules"]
 href = "https://github.com/rust-lang/rust/issues/51911"
 
 [[group]]
@@ -120,7 +127,7 @@ requires = [
 name = "offset"
 label = "offset\nfeature:const_ptr_offset"
 href = "https://github.com/rust-lang/rust/issues/71499"
-requires = ["unconst_rules"]
+requires = ["unsafe_rules"]
 items = []
 
 [[group]]
