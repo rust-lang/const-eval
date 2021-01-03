@@ -209,8 +209,8 @@ items = []
 
 [[group]]
 name = "const-blocks"
-label = "const blocks"
-href = "https://github.com/rust-lang/rfcs/pull/2920"
+label = "inline const"
+href = "https://github.com/rust-lang/rust/issues/76001"
 items = []
 
 [[group]]
