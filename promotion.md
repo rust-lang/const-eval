@@ -13,8 +13,10 @@ There are a few different contexts where promotion is beneficial.
 "Lifetime extension" is a mechanism that affects code like `&3`:
 Instead of putting it on the stack, the `3` is allocated in global static memory
 and a reference with lifetime `'static` is provided.  This is essentially an
-automatic transformation turning `&EXPR` into
-`{ const _PROMOTED = &EXPR; _PROMOTED }`, but only if `EXPR` qualifies.
+automatic transformation turning `&EXPR` into `{ const _PROMOTED = &EXPR;
+_PROMOTED }`, but only if `EXPR` qualifies. Topmost projections are not
+promoted, so `&EXPR.proj1.proj2` turns into `{ const _PROMOTED = &EXPR;
+&(*_PROMOTED).proj1.proj2 }`.
 
 Note that promotion happens on the MIR, not on surface-level syntax.  This is
 relevant when discussing e.g. handling of panics caused by overflowing
