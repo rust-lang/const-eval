@@ -244,9 +244,8 @@ items = []
 label = "feature:const_trait_impl"
 name = "trait_impl"
 href="https://github.com/rust-lang/rust/issues/67792"
-items = [
-  { label = "?const trait bound opt out", href = "https://github.com/rust-lang/rust/issues/67794"}
-]
+items = []
+requires = ["trait_bound_opt_out"]
 
 [[group]]
 label = "feature:const_raw_ptr_to_usize_cast"
