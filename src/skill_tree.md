@@ -305,9 +305,10 @@ items = []
 requires = ["mut_ref", "trait_impl"]
 
 [[group]]
-label = "ptr::copy_nonoverlapping"
+label = "ptr::copy_nonoverlapping\nfeature:const_intrinsic_copy"
 name = "copy_nonoverlapping"
 items = []
+href = "https://github.com/rust-lang/rust/issues/80697"
 requires = ["raw_ptr_deref", "mut_ref"]
 
 [[group]]
