@@ -2,80 +2,74 @@
 
 "Promotion" is the act of splicing a part of a MIR computation out into a
 separate self-contained MIR body which is evaluated at compile-time like a
-constant.
+constant. This mechanism has been introduced by [RFC 1414][promotion-rfc] with
+the goal of equipping some references-to-temporaries with a `'static` lifetime,
+which is sometimes called "lifetime extension".
 
-## Promotion contexts
+[promotion-rfc]: https://github.com/rust-lang/rfcs/blob/master/text/1414-rvalue_static_promotion.md
 
-There are a few different contexts where promotion is beneficial.
-
-### Lifetime extension
-
-"Lifetime extension" is a mechanism that affects code like `&3`:
-Instead of putting it on the stack, the `3` is allocated in global static memory
-and a reference with lifetime `'static` is provided.  This is essentially an
-automatic transformation turning `&EXPR` into `{ const _PROMOTED = &EXPR;
-_PROMOTED }`, but only if `EXPR` qualifies. Topmost projections are not
-promoted, so `&EXPR.proj1.proj2` turns into `{ const _PROMOTED = &EXPR;
-&(*_PROMOTED).proj1.proj2 }`.
+Promotion / lifetime extension affects code like `&3`: Instead of putting it on
+the stack, the `3` is allocated in global static memory and a reference with
+lifetime `'static` is provided.  This is essentially an automatic transformation
+turning `&EXPR` into `{ const _PROMOTED = &EXPR; _PROMOTED }`, but only if
+`EXPR` qualifies. Topmost projections are not promoted, so `&EXPR.proj1.proj2`
+turns into `{ const _PROMOTED = &EXPR; &(*_PROMOTED).proj1.proj2 }`.
 
 Note that promotion happens on the MIR, not on surface-level syntax.  This is
 relevant when discussing e.g. handling of panics caused by overflowing
 arithmetic.
 
-Lifetime extension is described in [RFC 1414][promotion-rfc]. The RFC uses the
-word "promotion" to refer exclusively to lifetime extension, since this was the
-first context where promotion was done.
+## Promotion and fallability of const-evaluation
 
-[promotion-rfc]: https://github.com/rust-lang/rfcs/blob/master/text/1414-rvalue_static_promotion.md
+On top of what applies to [consts](const.md), promoteds suffer from the
+additional issue that *the user did not ask for them to be evaluated at
+compile-time*.  Thus, if CTFE fails but the code would have worked fine at
+run-time, we broke the user's code for no good reason.  Even if we are sure we
+found an error in the user's code, we are only allowed to
+[emit a warning, not a hard error][warn-rfc].
 
-### Non-`Copy` array initialization
+For example:
+```rust
+fn foo() {
+    if false {
+        let x = &(1/0);
+    }
+}
+```
+If we performed promotion here, this would turn into
+```rust
+fn foo() {
+    if false {
+        const _PROMOTED = &(1/0);
+        let x = _PROMOTED;
+    }
+}
+```
+When compiling this function, we have to evaluate all constants that occur
+inside the function body, even if they might only be used in dead code. This
+means we have to evaluate `_PROMOTED`, which will error -- and now what, should
+we halt compilation? That would be wrong since there is no problem with this
+code, the "bad" division never actually happens as it occurs in dead code.
+(Note that the considerations would be the same even if `foo` were a `const
+fn`.)
 
-Another promotion context, the initializer of an array expression, was
-introduced in [RFC 2203][]. Here, promotion allows arrays of
-non-`Copy` types to be initialized idiomatically, for example
-`[Option::<Box<i32>>::None; 32]`.
-
-[RFC 2203]: https://github.com/rust-lang/rfcs/blob/master/text/2203-const-repeat-expr.md
-
-### `#[rustc_args_required_const(...)]` and inline assembly `const` operands
-
-Additionally, some platform intrinsics require certain parameters to be
-immediates (known at compile-time). We use the `#[rustc_args_required_const]`
-attribute, introduced in
-[rust-lang/rust#48018](https://github.com/rust-lang/rust/pull/48018), to
-specify these parameters and (aggressively, see below) try to promote the
-corresponding arguments.
-
-Similarly, inline assembly has `const` operands, which are treated the same way
-as `rustc_args_required_const` arguments.
-
-## Implicit and explicit promotion
-
-On top of what applies to [consts](const.md), promoteds suffer from the additional issue that *the user did not ask for them to be evaluated at compile-time*.
-Thus, if CTFE fails but the code would have worked fine at run-time, we broke the user's code for no good reason.
-Even if we are sure we found an error in the user's code, we are only allowed to [emit a warning, not a hard error][warn-rfc].
-We call this *implicit* promotion, and we have to be very conservative with what can and cannot be implicitly promoted.
-
-CTFE of implicitly promoted code must never fail to evaluate except if the
-run-time code also would have failed. This means we cannot permit calling
-arbitrary `const fn`, as discussed in detail in
+As a consequence, we only promote code that can never fail to evaluate (see
+[RFC 3027]). This ensures that even if promotion happens inside dead code, this
+will not turn a "runtime error in dead code" (which is not an error at all) into
+a compile-time error. In particular, we cannot promote calls to arbitrary `const
+fn`, as discussed in detail in
 [rust-lang/const-eval#19](https://github.com/rust-lang/const-eval/issues/19).
-Thus, only functions marked `#[rustc_promotable]` are implicitly promotable (see
-below).
+Thus, only functions marked `#[rustc_promotable]` are promotable.
 
-On the other hand, when a user passes an expression to a function with
-`#[rustc_args_required_const]`, the only way for this code to compile is to
-promote it.  In that sense, the user is explicitly asking for that expression to
-be evaluated at compile-time even though they have not written it in a `const`
-declaration. We can thus be less conservative. This is called *explicit*
-promotion.
+[RFC 3027]: https://rust-lang.github.io/rfcs/3027-infallible-promotion.html
 
-Currently, the following are considered explicit promotion contexts:
-* `#[rustc_args_required_const]` arguments and inline assembly `const` operands everywhere.
-* Everything inside the bodies of `const` and `static` items. (Note: this is handled separately from "explicit contexts" in promotion analysis, but the effect is the same.
-The arguments given above for justifying explicit promotion do not apply here. Currently, this works out because failing to evaluate one of these promoteds just leads to a warning, but longer-term it would be desirable to turn evaluation failures into hard errors, which for these promoteds means we have to guarantee that we only evaluate them on-demand.)
-
-In these contexts, we promote calls to arbitrary `const fn`.
+There is one exception to this rule: the bodies of `const`/`static`
+initializers. This code is never compiled, so we do not actually have to
+evaluate constants that occur in dead code. If we are careful enough during
+compilation, we can ensure that only constants whose value is *actually needed*
+are evaluated. We thus can be more relaxed about promotion; in practice, what
+this means is that we will promote calls to arbitrary `const fn`, not just those
+marked `#[rustc_promotable]`.
 
 [See below][static access] for another special case in promotion analysis:
 accesses and references to statics are only promoted inside other statics.
@@ -84,8 +78,8 @@ accesses and references to statics are only promoted inside other statics.
 
 ## "enclosing scope" rule
 
-Notice that some code involving `&` *looks* like it relies on lifetime
-extension but actually does not:
+Notice that some code involving `&` *looks* like it relies on promotion /
+lifetime extension but actually does not:
 
 ```rust
 const EMPTY_BYTES: &Vec<u8> = &Vec::new(); // Ok without lifetime extension
@@ -117,12 +111,13 @@ restrictions described there are needed because we want `const` to behave the
 same as copying the `const` initializer everywhere the constant is used; we need
 the same property when promoting expressions. But we need more.
 
-Note that there is no point in doing additional dynamic checks here.  The entire point of
-the promotion restrictions is to avoid failing compilation for code that would
-have been fine without promotion.  The best a dynamic check could do is tell us
-after the fact that we should not have promoted something, but then it is
-already too late -- and the dynamic checks for that are exactly the ones we are
-already doing for constants and statics.
+Note that there is no point in doing additional dynamic checks to ensure that we
+do get these restrictions right. The entire point of the promotion restrictions
+is to avoid failing compilation for code that would have been fine without
+promotion. The best a dynamic check could do is tell us after the fact that we
+should not have promoted something, but then it is already too late -- and the
+dynamic checks for that are exactly the ones we are already doing for constants
+and statics.
 
 ### Panics
 
