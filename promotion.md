@@ -119,13 +119,12 @@ should not have promoted something, but then it is already too late -- and the
 dynamic checks for that are exactly the ones we are already doing for constants
 and statics.
 
-### Panics
+### Panics, overflow and bounds checks
 
-Promotion is not allowed to throw away side effects.  This includes panicking.
-Let us look at what happens when we promote `&(0_usize - 1)` in a debug build:
-We have to avoid erroring at compile-time, because that would be promotion
-breaking compilation, but we must be sure to error correctly at run-time.  In
-the MIR, this looks roughly like
+Let us look at what happens when we promote `&(0_usize - 1)` in a debug build.
+This code is promoted even though we cannot promote code that could fail, and
+this code will fail with an overflow error! What is happening?  We have to look
+at the underlying MIR representation of this code to explain what happens:
 
 ```
 _tmp1 = CheckedSub (const 0usize) (const 1usize)
@@ -137,26 +136,27 @@ _res = &_tmp2
 ```
 
 Both `_tmp1` and `_tmp2` are promoted.  `_tmp1` evaluates to `(~0, true)`, so
-the assertion will always fail at run-time.  Computing `_tmp2` fails with a
-panic, which is thrown away -- so we have no result.  In principle, we could
-generate any code for this because we know the code is unreachable (the
-assertion is going to fail).  Just to be safe, we generate a call to
-`llvm.trap`.
+the assertion will always fail at run-time. Computing `_tmp2` evaluates to `~0`.
 
-As long as CTFE only panics when run-time code would also have panicked, this
-works out correctly: The MIR already contains provisions for what to do on
-panics (unwind edges etc.), so when CTFE panics we can generate code that
-hard-codes a panic to happen at run-time.  In other words, *promotion relies on
-CTFE correctly implementing both normal program behavior and panics*.  An
-earlier version of miri used to panic on arithmetic overflow even in release
-mode.  This breaks promotion, because now promoting code that would work (and
-could not panic!) at run-time leads to a compile-time CTFE error.
+In other words, the actually failing check is not promoted, only the computation
+that serves as input to the check is promoted.
+
+An earlier version of Miri used to error on arithmetic overflow even in release
+mode. This breaks promotion, because now promoting code like `_tmp1` would
+introduce promotes that fail to evaluate, which is not acceptable as explained
+above!
+
+Something similar but more subtle happens when promoting array accesses: the
+bounds check is not promoted, but the array access is. However, before accepting
+a temporary for promotion, we ensure that array accesses are definitely
+in-bounds. This leads to MIR without bounds checks, but we know the array access
+will always succeed.
 
 ### Const safety
 
-We have explained what happens when evaluating a promoted panics, but what about
-other kinds of failure -- what about hitting an unsupported operation or
-undefined behavior?  To make sure this does not happen, only const safe code
+We have explained how we ensure that evaluating a promoted does not panic, but
+what about other kinds of failure -- what about hitting an unsupported operation
+or undefined behavior? To make sure this does not happen, only const safe code
 gets promoted. The exact details for `const safety` are discussed in
 [here](const_safety.md).
 
