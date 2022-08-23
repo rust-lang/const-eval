@@ -128,4 +128,5 @@ observing the fact that it has been "deduplicated"), this here is about using
 such a value at compile-time even though it might be changed at run-time.
 
 *Dynamic check.* The Miri engine checks this dynamically by refusing to access
-global memory when computing a const.
+global mutable memory, and refusing to dereference any pointer to a static, when
+computing a const.
