@@ -71,9 +71,6 @@ are evaluated. We thus can be more relaxed about promotion; in practice, what
 this means is that we will promote calls to arbitrary `const fn`, not just those
 marked `#[rustc_promotable]`.
 
-[See below][static access] for another special case in promotion analysis:
-accesses and references to statics are only promoted inside other statics.
-
 [warn-rfc]: https://github.com/rust-lang/rfcs/blob/master/text/1229-compile-time-asserts.md
 
 ## "enclosing scope" rule
