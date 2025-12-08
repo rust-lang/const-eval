@@ -9,8 +9,8 @@ four possible ways:
 * The program causes undefined behavior (e.g., dereferencing an out-of-bounds
   pointer).
 * The program panics (e.g., a failed bounds check).
-* The program exhausts its resources: It might overflow the stack, allocation
-  too much memory or loops forever.  Note that detecting these conditions
+* The program exhausts its resources: It might overflow the stack, allocate
+  too much memory or loop forever.  Note that detecting these conditions
   happens on a best-effort basis only.
 
 Just like panics and non-termination are acceptable in safe run-time Rust code,
