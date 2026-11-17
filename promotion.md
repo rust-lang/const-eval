@@ -94,7 +94,8 @@ building already, and does not involve lifetime extension.
 In contrast, this does not compile:
 
 ```rust
-const OPT_EMPTY_BYTES: Option<&Vec<u8>> = Some(&Vec::new());
+const fn id<T>(x: T) -> T { x }
+const EMPTY_BYTES_2: &Vec<u8> = id(&Vec::new());
 ```
 
 The "enclosing scope" rule only fires for outermost `&`, just like in `fn` bodies.
